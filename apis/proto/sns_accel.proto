@@ -1,0 +1,109 @@
+// @file sns_accel.proto
+//
+// @brief Defines the API for Accelerometer Sensors.
+//
+// @copyright
+// Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+//
+// @details All Accelerometer Sensor drivers are required to comply with this API.
+// Any additional functionality for Accelerometer Sensor may be defined in a
+// device specific API file.
+//
+// ## Attribute Requirements:
+// The Accelerometer Sensor publishes:
+// 1. SNS_STD_SENSOR_ATTRID_TYPE attribute value as "accel".
+// 2. SNS_STD_SENSOR_ATTRID_API attribute contains "sns_accel.proto".
+// 3. SNS_STD_SENSOR_ATTRID_RESOLUTIONS attribute values in (m/s^2)/LSB unit.
+// 4. SNS_STD_SENSOR_ATTRID_RANGES attribute values in +/- m/s^2 unit.
+// 5. SNS_STD_SENSOR_ATTRID_STREAM_TYPE as SNS_STD_SENSOR_STREAM_TYPE_STREAMING.
+// 6. See sns_std_sensor.proto for other attributes.
+//
+// ## Processing Stream Requests:
+// 1. The Accelerometer Sensor handles the sns_std_sensor_config
+//    message request with msgid SNS_STD_SENSOR_MSGID_SNS_STD_SENSOR_CONFIG
+//    for all non-gated stream enable/update requests.
+// 2. The Accelerometer Sensor handles the sns_std_sensor_config
+//    message request with msgid SNS_STD_EVENT_GATED_SENSOR_MSGID_SNS_STD_SENSOR_CONFIG
+//    for all gated stream enable/update requests.
+//    a. Accelerometer stream is gated on the motion detection feature
+//       available on most accel hardware. This feature is published via the
+//       "motion_detect" Sensor by the same driver library as "accel" Sensor.
+//    b. If "motion_detect" is not supported then the Sensor does not support
+//       stream gating. A gated client request shall be rejected in this case.
+// 3. The Accelerometer Sensor uses batching_period item in
+//    sns_std_request as the requested batching rate to determine
+//    hardware FIFO and DAE (if supported) watermarks.
+//
+// ## Publishing Stream Events:
+// 1. The Accelerometer Sensor publishes acceleration data stream events
+//    using the sns_std_sensor_event message.
+// 2. Each stream event contains three output data fields where data is
+//    in m/s^2 units and is factory calibrated.
+// 3. Data in the stream is adjusted to Sensing Hub coordinate system. See Sensing
+//    Hub documentation for a complete definition. As an example on a mobile phone:
+//    if the device is held with screen facing the user in its natural orientation:
+//    X-axis: parallel to the screen pointing to the right
+//    Y-axis: parallel to the screen pointing to the top
+//    Z-axis: perpendicular to the screen pointing towards the user
+// 4. Data in the stream event is ordered as:
+//    @code
+//    data[0] = X-axis
+//    data[1] = Y-axis
+//    data[2] = Z-axis
+//    @endcode
+// 5. Each stream event publishes an accuracy field:
+//    SNS_STD_SENSOR_SAMPLE_STATUS_UNRELIABLE to mark invalid samples when hardware is
+//    yet to stabilize after the sensor is configured.
+//    SNS_STD_SENSOR_SAMPLE_STATUS_ACCURACY_HIGH to mark samples when they are valid.
+// 6. The Accelerometer Sensor shall publish a configuration event using the
+//    sns_std_sensor_physical_config_event message.
+//    It shall publish this event each time there is change in hardware config of the
+//    sensor or when a client sends a streaming request.
+// 7. The Accelerometer Sensor shall publish a factory calibration event using the
+//    sns_cal_event message (see sns_cal.proto).
+//    It shall publish a cal event each time there is change in its factory calibration
+//    data or when a client sends a new streaming request.
+// 8. When all outstanding requests to the Sensor are gated requests and the
+//    "motion_detect" Sensor is enabled then the accel Sensor stops generating
+//    output events, and the motion sensor sends the SNS_MOTION_DETECT_EVENT_TYPE_ENABLED
+//    event.
+//    a. If motion detect interrupt fires:
+//       - All existing accel gated stream requests are converted to non-gated
+//         stream requests.
+//         The accel Sensor publishes an event with message ID
+//         SNS_STD_EVENT_GATED_SENSOR_MSGID_GATED_REQ_CONVERTED_TO_NON_GATED to
+//         to indicate this change to its gated clients.
+//       - The accel Sensor resumes generating output to all clients.
+//    b. The Sensor resumes generating output events if motion detect interrupt
+//       is disabled potentially due to a new non-gated accel stream request or
+//       the request to motion_detect Sensor is disabled. In this case, gated requests
+//       are not converted to non-gated requests, and the motion sensor sends the
+//       SNS_MOTION_DETECT_EVENT_TYPE_DISABLED event.
+// 9. If all outstanding requests to the Sensor are gated requests but the
+//    "motion_detect" Sensor is not enabled then the Sensor continues to generate
+//    output events.
+//
+// ## Processing Self-Test Requests:
+// 1. The Accelerometer Sensor implements SNS_PHYSICAL_SENSOR_TEST_TYPE_COM test
+//    type using the physical sensor test API.
+// 2. The Accelerometer Sensor implements SNS_PHYSICAL_SENSOR_TEST_TYPE_FACTORY test
+//    type to determine factory calibration parameters using the physical
+//    sensor test API.
+// 3. The Accelerometer Sensor may implement other test types.
+//
+// ## Publishing Self-Test Events:
+// 1. The Accelerometer Sensor uses sns_physical_sensor_test_event message to publish
+//    a test completion event.
+// 2. The test_passed field in sns_physical_sensor_test_event is used to output the
+//    pass/fail result of self-test execution.
+// 3. The test_data field in sns_physical_sensor_test_event may be used to output any
+//    driver-specific error data.
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_cal.proto";
+import "sns_physical_sensor_test.proto";
+import "sns_std_event_gated_sensor.proto";
+import "sns_std_sensor.proto";
+

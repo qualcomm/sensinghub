@@ -1,0 +1,80 @@
+// @file sns_suid.proto
+//
+// @brief Defines standard message types to request and receive SUIDs.
+//
+// @copyright
+// Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+//
+// @details This file provides definitions for requests and parameters for
+// requesting SUID of a given data type. It also provides the
+// definition of the suid response event.
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_std_type.proto";
+
+
+// @brief the Message ID for SUID request
+enum sns_suid_msgid {
+  option (nanopb_enumopt).long_names = false;
+
+  // @brief Request for SUIDs that support the specified Data Type.
+  // Message: sns_suid_req
+  SNS_SUID_MSGID_SNS_SUID_REQ = 512;
+
+  // @brief Event containing SUIDs that support the requested Data Type.
+  // Message: sns_suid_event
+  SNS_SUID_MSGID_SNS_SUID_EVENT = 768;
+}
+
+// @brief UID for the SUID Sensor
+// All other Sensor UIDs must be discovered dynamically
+message sns_suid_sensor {
+  required fixed64 suid_low = 1 [default = 0xabababababababab];
+  required fixed64 suid_high = 2 [default = 0xabababababababab];
+}
+
+// @brief Request message for the list of SUIDs that support the specified Data Type.
+//
+// @details Note: Additional requests arriving on the same connection, will not result
+// in a replaced request, but instead the new request will be appended to any
+// active registrations.
+message sns_suid_req {
+  // @brief Data type as defined by the SNS_STD_SENSOR_ATTRID_TYPE in the 
+  // Sensor proto.
+  required string data_type = 1;
+
+  // @brief Register for updates to the list of SUIDs advertising data_type
+  optional bool register_updates = 2;
+
+  // @brief Weather to request for the default sensor only.
+  //
+  // @details If there are multiple Sensors supporting a data type, one of these may be 
+  // designated as "default" through registry by defining other attributes such
+  // as SNS_STD_SENSOR_ATTRID_RIGID_BODY for the Sensor.
+  //
+  // If default_only field is not populated OR a default definition for the 
+  // data type is not present, the SUID of the first Sensor supporting the data
+  // type will be sent when available.
+  //
+  // If default_only field is set to true, only the UID of the Sensor that
+  // supports all the attribute requirements for "default" will be sent when
+  // available.
+  //
+  // If default_only is set to false, UIDs of all Sensors supporting the data
+  // type will be sent, as and when they become available.  
+  optional bool default_only = 3 [default = true];
+}
+
+// @brief Event specifying the list of SUIDs supporting the given Data Type.
+// Receipt of this event indicates that a change to this list has occurred
+// since the previous event.
+message sns_suid_event {
+  // @brief Data type as defined by the SNS_STD_SENSOR_ATTRID_TYPE in the 
+  // Sensor proto.
+  required string data_type = 1;
+
+  // @brief UIDs of the Sensors supporting the data type. 
+  repeated sns_std_suid suid = 2;
+}

@@ -1,0 +1,132 @@
+// @file sns_sar.proto
+//
+// @brief Defines the API for Specific Absorption Rate (SAR) Sensors.
+//
+// @copyright 
+// Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+//
+// @details SAR sensors typically detect human object proximity using change in capacitance
+// levels of copper touch pads/buttons.
+// All SAR Sensor drivers are required to comply with this API.
+// Any new functionality for SAR Sensor may be defined in a
+// device specific API file.
+//
+// ## Attribute Requirements:
+// The SAR Sensor publishes:
+// 1. SNS_STD_SENSOR_ATTRID_TYPE attribute value as "sar".
+//    Each SAR sensor (example individual capacitive button) shall be published
+//    as an independent sensor with a unique Sensor UID.
+// 2. SNS_STD_SENSOR_ATTRID_API attribute contains "sns_sar.proto"
+// 3. SNS_STD_SENSOR_ATTRID_RANGES attribute values in cm unit (proximity distance).
+// 4. SNS_STD_SENSOR_ATTRID_STREAM_TYPE as SNS_STD_SENSOR_STREAM_TYPE_STREAMING
+//    or SNS_STD_SENSOR_STREAM_TYPE_ON_CHANGE
+// 5. See sns_std_sensor.proto for other attributes.
+//
+// ## Processing Stream Requests:
+// 1. A SAR sensor may support either streaming or on-change
+//    modes. The operating mode is configured in the Registry.
+//  a. If a driver supports both modes, it must publish two sensors. One
+//     with SNS_STD_SENSOR_ATTRID_STREAM_TYPE == SNS_STD_SENSOR_STREAM_TYPE_STREAMING,
+//     and a second with SNS_STD_SENSOR_STREAM_TYPE_ON_CHANGE.
+// 2. In streaming mode, the SAR sensor handles the sns_std_sensor_config
+//    client requests for all stream enable/update request types. 
+// 3. In on-change mode, the SAR sensor handles the 
+//    SNS_STD_SENSOR_MSGID_SNS_STD_ON_CHANGE_CONFIG client requests.
+// 4. The client must inspect the SNS_STD_SENSOR_ATTRID_STREAM_TYPE to
+//    determine the operating mode and the correct request for the sensor.
+//
+// ## Publishing Stream Events:
+// 1. The SAR Sensor publishes human object proximity data events using a sns_sar_event
+//    message or sns_sar_event_recurrent message.
+//  a. If this is a SNS_STD_SENSOR_STREAM_TYPE_STREAMING sensor, it uses the
+//     sns_sar_event_recurrent message.
+//  b. If this is a SNS_STD_SENSOR_STREAM_TYPE_ON_CHANGE sensor, it uses the
+//     sns_sar_event message.
+// 2. If an ON_CHANGE sensor, the SAR sensor shall report samples only for
+//    NEAR/FAR transitions triggered by the detection of an object 
+//    (typically human) in proximity to the SAR sensor. 
+//    Additionally, the SAR sensor shall publish a data event for each on-change
+//    client request.
+// 2. Each event includes an accuracy field:
+//    SNS_STD_SENSOR_SAMPLE_STATUS_UNRELIABLE to mark invalid samples when hardware is
+//    yet to stabilize after the sensor is configured.
+//    SNS_STD_SENSOR_SAMPLE_STATUS_ACCURACY_HIGH to mark samples when they are valid.
+// 3. The SAR Sensor publishes a configuration event using the
+//    sns_std_sensor_physical_config_event message.
+//    It publishes this event each time there is change in hardware config of the sensor
+//    or when a client sends a new request.
+//
+// ## Processing Self-Test Requests:
+// 1. The SAR Sensor implements SNS_PHYSICAL_SENSOR_TEST_TYPE_COM test
+//    type using the physical sensor test API.
+// 2. The SAR Sensor may implement SNS_PHYSICAL_SENSOR_TEST_TYPE_FACTORY test
+//    type to determine factory calibration parameters using the physical
+//    sensor test API.
+// 3. The SAR Sensor may implement other test types.
+//
+// ## Publishing Self-Test Events:
+// 1. The SAR Sensor uses sns_physical_sensor_test_event message to publish
+//    a test completion event.
+// 2. The test_passed field in sns_physical_sensor_test_event is used to output the
+//    pass/fail result of self-test execution.
+// 3. The test_data field in sns_physical_sensor_test_event may be used to output any
+//    driver-specific error data.
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_cal.proto";
+import "sns_physical_sensor_test.proto";
+import "sns_std_sensor.proto";
+
+
+// @brief Message IDs for SAR Sensor
+enum sns_sar_msgid {
+  option (nanopb_enumopt).long_names = false;
+
+  // @brief A SAR data event from a sensor with
+  // SNS_STD_SENSOR_ATTRID_STREAM_TYPE == SNS_STD_SENSOR_STREAM_TYPE_ON_CHANGE
+  // Message: sns_sar_event
+  SNS_SAR_MSGID_SNS_SAR_EVENT  = 769;
+  
+  // @brief A SAR data event from a sensor with
+  // SNS_STD_SENSOR_ATTRID_STREAM_TYPE == SNS_STD_SENSOR_STREAM_TYPE_STREAMING
+  // Message: sns_sar_event_recurrent
+  SNS_SAR_MSGID_SNS_SAR_EVENT_RECURRENT  = 1031;
+}
+
+// @brief Sar Event Type
+enum sns_sar_event_type {
+  option (nanopb_enumopt).long_names = false;
+
+  SNS_SAR_EVENT_TYPE_FAR = 0;
+  SNS_SAR_EVENT_TYPE_NEAR  = 1;
+}
+
+// @brief Event from SAR Sensor
+message sns_sar_event
+{
+  // @brief SAR NEAR/FAR output event
+  required sns_sar_event_type sar_event_type = 1 [default = SNS_SAR_EVENT_TYPE_FAR];
+
+  // @brief SAR sensor raw data.
+  // Format of this data is driver specific.
+  optional bytes additional_sar_data = 2;
+
+  // @brief SAR sensor sample status
+  required sns_std_sensor_sample_status status = 3 [default = SNS_STD_SENSOR_SAMPLE_STATUS_UNRELIABLE];
+}
+
+// @brief  Recurrent Event from SAR Sensor
+message sns_sar_event_recurrent
+{
+  // @brief SAR NEAR/FAR output event
+  required sns_sar_event_type sar_event_type = 1 [default = SNS_SAR_EVENT_TYPE_FAR];
+
+  // @brief SAR sensor raw data.
+  // Format of this data is driver specific.
+  optional bytes additional_sar_data = 2;
+
+  // @brief SAR sensor sample status
+  required sns_std_sensor_sample_status status = 3 [default = SNS_STD_SENSOR_SAMPLE_STATUS_UNRELIABLE];
+}

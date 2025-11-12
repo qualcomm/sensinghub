@@ -1,0 +1,166 @@
+// @file sns_client.proto
+//
+// @brief Defines messages for the Client API used by external (non-Sensing Hub)
+// clients to communicate with Sensors in the Sensing Hub.
+//
+// @copyright
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+//
+// @details ## Message IDs:
+// Message IDs uniquely identify a particular message among all messages
+// supported by a Sensor, both requests and events.
+// IDs are subdivided into reserved pools as shown below.
+//
+// ## Reserved for Framework use only:
+// Note: Message IDs in these ranges are common to all Sensors.
+// 0-127   - Request Messages
+// 128-255 - Non-recurrent events (e.g configuration updates, infrequent sensor
+//           samples)
+// 256-511 - Recurrent and/or periodic events (e.g. sensor samples)
+//
+// ## Sensor use:
+// Note: Message IDs in these ranges may not be common among different
+//       Sensor data types. Both the data type and message ID is necessary
+//       to uniquely identify a message.
+// 512-767  -  Request messages
+// 768-1023 -  Non-recurrent events (e.g configuration updates, infrequent sensor
+//             samples)
+// 1024-1536 - Recurrent and/or periodic events (e.g. sensor samples)
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_std.proto";
+
+
+// @brief Framework defined message IDs:
+enum sns_client_msgid {
+  option (nanopb_enumopt).long_names = false;
+
+  // @brief Request to disable client
+  // Message : Empty
+  SNS_CLIENT_MSGID_SNS_CLIENT_DISABLE_REQ = 10;
+}
+
+// @brief Delivery configuration
+enum sns_client_delivery {
+  option (nanopb_enumopt).long_names = false;
+
+  SNS_CLIENT_DELIVERY_WAKEUP = 0;
+  SNS_CLIENT_DELIVERY_NO_WAKEUP = 1;
+}
+
+// @brief Resampler configuration
+// Enables and configures resampling (if supported by the requested sensor)
+message sns_resampler_client_config
+{
+  // @brief Resampler rate type
+  required sns_resampler_rate rate_type = 1;
+
+  // @brief Set to true to enable alias filtering
+  required bool filter = 2;
+}
+
+// @brief Threshold configuration
+// Enables and configures thresholding (if supported by the requested sensor)
+message sns_threshold_client_config
+{
+  // @brief Threshold type
+  required  sns_threshold_type  threshold_type = 1;
+
+  // @brief The threshold value per data field.
+  //
+  // @details The number of threshold values must be less than or equal to the number of
+  // sensor data fields. Thresholding can be disabled for specific fields by
+  // setting corresponding values to FLT_MAX.
+  // - SNS_THRESHOLD_TYPE_RELATIVE_VALUE and SNS_THRESHOLD_TYPE_ABSOLUTE, units
+  // for threshold_val are the same as the sensor data.
+  // - SNS_THRESHOLD_TYPE_RELATIVE_PERCENT, threshold_val is in percentage.
+  // - SNS_THRESHOLD_TYPE_ANGLE, an angle in radians between current and last
+  // reported quaternions must be provided.
+  repeated float threshold_val = 2;
+}
+
+// @brief Request Message
+message sns_client_request_msg {
+  // @brief SUID of the requested Sensor
+  required sns_std_suid suid = 1;
+
+  // @brief Msg Id of the request message as defined in the Sensor's API
+  required fixed32 msg_id = 2;
+
+  // @brief Whether to wakeup a suspended client processor to deliver events
+  message suspend_config {
+    // @brief Processor on which the client resides; When sending data to any client
+    // on a particular processor, all clients on that processor will
+    // receive batched data.
+    required sns_std_client_processor client_proc_type = 1 [default = SNS_STD_CLIENT_PROCESSOR_APSS];
+
+    // @brief Delivery configuration
+    required sns_client_delivery  delivery_type = 2 [default = SNS_CLIENT_DELIVERY_WAKEUP];
+
+    // @brief List of message Ids which should not wakeup client processor from
+    // suspend even if the delivery type is set to SNS_CLIENT_DELIVERY_WAKEUP
+    repeated fixed32 nowakeup_msg_ids = 3;
+  }
+  // @brief The suspend config
+  required suspend_config susp_config = 3;
+
+  // @brief Base message payload; contents are specified in sns_std.proto and by the
+  // requested Sensor API
+  required sns_std_request request = 4;
+
+  // @brief Resampler configuration for the requested sensor
+  optional sns_resampler_client_config resampler_config = 5;
+
+  // @brief Threshold configuration for the requested sensor
+  optional sns_threshold_client_config threshold_config = 6;
+
+  // @brief Client technology
+  optional sns_tech client_tech = 7;
+}
+
+// @brief Version Request Message
+message sns_client_version_request_msg {
+  // Empty payload
+}
+
+// @brief Version Response Message
+message sns_client_version_response_msg {
+  // @brief Major version
+  optional uint32 major = 1;
+
+  // @brief Minor version
+  optional uint32 minor = 2;
+
+  // @brief Patch version
+  optional uint32 patch = 3;
+}
+
+// @brief Event Message
+message sns_client_event_msg {
+  // @brief SUID of the requested sensor
+  required sns_std_suid suid = 1;
+
+  // @brief The Client Event Message
+  message sns_client_event {
+    // @brief Msg Id of the event as defined in the Sensor API
+    required fixed32 msg_id = 1;
+
+    // @brief Timestamp, typically in clock ticks, associated with this event
+    //
+    // @details For events generated by the Framework (such as configuration
+    // updates or error events), this timestamp refers to the time at which
+    // the event was created.
+    // For most events this timestamp is specified by the Sensor. For example,
+    // many Sensors define the timestamp as the time at which the data was
+    // sampled.
+    required fixed64 timestamp = 2;
+
+    // @brief Payload containing the data/event from the requested Sensor.
+    // This payload will need to be decoded using definition in the requested
+    // Sensor API
+    required bytes payload = 3;
+  }
+  repeated sns_client_event events = 2;
+}
