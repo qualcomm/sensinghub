@@ -1,0 +1,25 @@
+Source: qcom-sensing-hub
+Section: libs
+Priority: optional
+Maintainer: Bhanu Vivek Matsa <quic_bmasta@quicinc.com>
+Build-Depends: debhelper-compat (= 13), pkgconf, libglib2.0-dev, protobuf-compiler,
+ libprotobuf-dev
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+Homepage: https://git.codelinaro.org/clo/le/platform/vendor/qcom-opensource/sensing-hub.git
+
+Package: qcom-sensing-hub
+Architecture: arm64
+Replaces: libsensinghub1
+Breaks: libsensinghub1
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Qualcomm Sensing-hub APIs Library
+
+Package: qcom-sensing-hub-dev
+Architecture: arm64
+Replaces: libsensinghub-dev
+Breaks: libsensinghub-dev
+Section: libdevel
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ qcom-sensing-hub (= ${binary:Version})
+Description: Qualcomm Sensing-hub APIs Library dev package

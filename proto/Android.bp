@@ -1,0 +1,335 @@
+cc_library_shared {
+    name: "libsensinghubapi",
+    rtti: false,
+    srcs: [
+        "google/protobuf/descriptor.proto",
+        "nanopb.proto",
+        "sns_std_sensor.proto",
+        "sns_sar.proto",
+        "sns_std_event_gated_sensor.proto",
+        "sns_hall.proto",
+        "sns_cal.proto",
+        "sns_ambient_temperature.proto",
+        "sns_ambient_light.proto",
+        "sns_gyro.proto",
+        "sns_proximity.proto",
+        "sns_accel.proto",
+        "sns_sensor_temperature.proto",
+        "sns_mag.proto",
+        "sns_pressure.proto",
+        "sns_std_type.proto",
+        "sns_std.proto",
+        "sns_suid.proto",
+        "sns_client.proto",
+        "sns_humidity.proto",
+        "sns_direct_channel.proto",
+        "sns_physical_sensor_test.proto",
+        "sns_device_mode.proto",
+        "sns_amd.proto",
+        "sns_device_orient.proto",
+        "sns_game_rv.proto",
+        "sns_geomag_rv.proto",
+        "sns_gravity.proto",
+        "sns_gyro_cal.proto",
+        "sns_hinge_angle.proto",
+        "sns_mag_cal.proto",
+        "sns_pedometer.proto",
+        "sns_persist_motion_detect.proto",
+        "sns_persist_stationary_detect.proto",
+        "sns_rotv.proto",
+        "sns_sig_motion.proto",
+        "sns_tilt.proto",
+        "sns_transport_ppe.proto"
+    ],
+    local_include_dirs: ["./"],
+    cppflags: ["-DGOOGLE_PROTOBUF_NO_RTTI"],
+    cflags: [
+        "-Werror",
+        "-Wall",
+        "-Wno-unused-parameter",
+        "-fexceptions",
+    ],
+    proto: {
+        type: "lite",
+        canonical_path_from_root: false,
+        export_proto_headers: true,
+        local_include_dirs : ["./"],
+    },
+    shared_libs: [
+        "libcutils",
+        "libutils",
+        "libprotobuf-cpp-lite",
+    ],
+    sanitize:{
+        integer_overflow: true,
+    },
+    owner: "qti",
+    vendor: true,
+}
+
+cc_defaults {
+    name: "qshApiDirPath",
+    proto: {
+        include_dirs: ["vendor/qcom/opensource/sensing-hub/apis/proto"],
+    },
+}
+
+prebuilt_etc {
+    name: "descriptor.proto",
+    src: "google/protobuf/descriptor.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "nanopb.proto",
+    src: "nanopb.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_accel.proto",
+    src: "sns_accel.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_ambient_light.proto",
+    src: "sns_ambient_light.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_ambient_temperature.proto",
+    src: "sns_ambient_temperature.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_amd.proto",
+    src: "sns_amd.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_cal.proto",
+    src: "sns_cal.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_client.proto",
+    src: "sns_client.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_device_mode.proto",
+    src: "sns_device_mode.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_device_orient.proto",
+    src: "sns_device_orient.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_direct_channel.proto",
+    src: "sns_direct_channel.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_game_rv.proto",
+    src: "sns_game_rv.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_geomag_rv.proto",
+    src: "sns_geomag_rv.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_gravity.proto",
+    src: "sns_gravity.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_gyro.proto",
+    src: "sns_gyro.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_gyro_cal.proto",
+    src: "sns_gyro_cal.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_hall.proto",
+    src: "sns_hall.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_hinge_angle.proto",
+    src: "sns_hinge_angle.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_humidity.proto",
+    src: "sns_humidity.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_mag.proto",
+    src: "sns_mag.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_mag_cal.proto",
+    src: "sns_mag_cal.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_pedometer.proto",
+    src: "sns_pedometer.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_persist_motion_detect.proto",
+    src: "sns_persist_motion_detect.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_persist_stationary_detect.proto",
+    src: "sns_persist_stationary_detect.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_physical_sensor_test.proto",
+    src: "sns_physical_sensor_test.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_pressure.proto",
+    src: "sns_pressure.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_proximity.proto",
+    src: "sns_proximity.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_rotv.proto",
+    src: "sns_rotv.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_sar.proto",
+    src: "sns_sar.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_sensor_temperature.proto",
+    src: "sns_sensor_temperature.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_sig_motion.proto",
+    src: "sns_sig_motion.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_std.proto",
+    src: "sns_std.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_std_event_gated_sensor.proto",
+    src: "sns_std_event_gated_sensor.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_std_sensor.proto",
+    src: "sns_std_sensor.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_std_type.proto",
+    src: "sns_std_type.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_suid.proto",
+    src: "sns_suid.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}
+prebuilt_etc {
+    name: "sns_tilt.proto",
+    src: "sns_tilt.proto",
+    sub_dir: "sensors/proto",
+    vendor: true,
+    owner: "qti",
+}

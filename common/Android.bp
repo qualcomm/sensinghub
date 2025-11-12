@@ -1,0 +1,49 @@
+cc_library_headers {
+    name: "libsensinghubcommon_headers",
+    export_include_dirs: ["inc"],
+    owner: "qti",
+    proprietary: true,
+}
+
+soong_config_module_type {
+    name: "qsh_cc_defaults",
+    module_type: "cc_defaults",
+    config_namespace: "qshconfig",
+    variables: [
+        "isISessionAvailable",
+    ],
+    properties: ["defaults", "shared_libs", "header_libs"],
+}
+
+soong_config_string_variable {
+    name: "isISessionAvailable",
+    values: ["set", "unset"],
+}
+
+qsh_cc_defaults {
+    name: "sensingHubDefaults",
+    soong_config_variables: {
+        isISessionAvailable: {
+            set: {
+                defaults: [
+                    "qshApiDirPath",
+                ],
+                shared_libs: [
+                    "libsensinghubapi",
+                    "libsensinghubsession",
+                ],
+                header_libs: [
+                    "libsensinghubsession_headers",
+                ],
+            },
+            unset: {
+                defaults: [
+                    "sns_api_dir",
+                ],
+                shared_libs: [
+                    "libsnsapi",
+                ],
+            },
+        },
+    },
+}

@@ -1,0 +1,17 @@
+cc_binary {
+    name: "SessionClient",
+    rtti: false,
+    srcs: [
+        "SessionClient.cpp"
+    ],
+    header_libs: [
+        "libsensinghubcommon_headers",
+    ],
+    shared_libs: [
+        "libsensinghubapi",
+        "libsensinghubsession",
+        "libprotobuf-cpp-lite"
+    ],
+    owner: "qti",
+    vendor: true,
+}

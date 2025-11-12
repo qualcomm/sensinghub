@@ -1,0 +1,50 @@
+// @file sns_tilt.proto
+//
+// @brief Defines message types for the Tilt Sensors.
+//
+// @copyright
+// Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+//
+// @details The Tilt Sensor looks for a change in the angle of a gravity vector from an
+// anchor vector, as defined below.
+//
+// The initial anchor vector is based on an average of one second of
+// accel data after initial activation.
+//
+// The gravity vector is calculated based on an average of two seconds of
+// accel data.
+//
+// The anchor vector is reset to the current gravity vector each time the
+// Tilt event is generated.
+// There is only one anchor vector shared amongst all clients.
+//
+// The Tilt event is generated when the current gravity vector is 35 degrees
+// or more from the anchor vector.
+//
+// ## Attribute Requirements:
+// 1. SNS_STD_SENSOR_ATTRID_TYPE: "tilt"
+// 2. SNS_STD_SENSOR_ATTRID_STREAM_TYPE: SNS_STD_SENSOR_STREAM_TYPE_ON_CHANGE
+// 3. SNS_STD_SENSOR_ATTRID_RIGID_BODY: sns_std_sensor_rigid_body_type
+// 4. SNS_STD_SENSOR_ATTRID_API attribute contains "sns_tilt.proto"
+//
+// ## Processing Stream Requests:
+// - SNS_STD_SENSOR_MSGID_SNS_STD_ON_CHANGE_CONFIG is used to enable the sensor
+//
+// ## Publishing Stream Events:
+// A NULL message with message ID SNS_TILT_MSGID_SNS_TILT_EVENT is used to
+// publish tilt event
+//
+// Tilt does not publish configuration events.
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_std_sensor.proto";
+
+
+// @brief Message IDs for Tilt Sensor
+enum sns_tilt_msgid {
+  option (nanopb_enumopt).long_names = false;
+
+  SNS_TILT_MSGID_SNS_TILT_EVENT = 774;
+}

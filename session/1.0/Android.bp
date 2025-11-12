@@ -1,0 +1,21 @@
+cc_library_shared {
+    name: "libsensinghubsession",
+    rtti: false,
+    srcs: [
+        "src/SessionFactory.cpp"
+    ],
+    local_include_dirs: ["inc"],
+    export_include_dirs: ["inc"],
+    header_libs: [
+        "libsensinghubcommon_headers",
+    ],
+    owner: "qti",
+    vendor: true,
+}
+
+cc_library_headers {
+    name: "libsensinghubsession_headers",
+    export_include_dirs: ["inc"],
+    owner: "qti",
+    vendor: true,
+}

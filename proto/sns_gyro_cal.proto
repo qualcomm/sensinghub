@@ -1,0 +1,33 @@
+// @file sns_gyro_cal.proto
+//
+// @brief Defines message types for the Gyro Calibration Sensors.
+//
+// @copyright
+// Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+//
+// @details The Gyro Calibration Sensor determines the calibration parameters
+// for gyro sensor.
+//
+// ## Attribute Requirements:
+// 1. SNS_STD_SENSOR_ATTRID_TYPE: "gyro_cal"
+// 2. SNS_STD_SENSOR_ATTRID_STREAM_TYPE: SNS_STD_SENSOR_STREAM_TYPE_ON_CHANGE
+// 3. SNS_STD_SENSOR_ATTRID_RIGID_BODY: sns_std_sensor_rigid_body_type
+// 4. SNS_STD_SENSOR_ATTRID_API attribute contains "sns_gyro_cal.proto"
+//
+// ## Processing Stream Requests:
+// - SNS_STD_SENSOR_MSGID_SNS_STD_ON_CHANGE_CONFIG message ID is used to
+//      enable the sensor
+// - SNS_CAL_MSGID_SNS_CAL_RESET message ID is used to reset the algorithm
+//      and any previously determined calibration parameters.
+//
+// ## Publishing Stream Events:
+// - SNS_CAL_MSGID_SNS_CAL_EVENT message ID is used to report calibration
+//      parameters to the client of the sensor. The sns_cal_event message as
+//      defined in sns_cal.proto is used to report this data event where the
+//      units for the bias field in the message are in rad / s
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_cal.proto";
+

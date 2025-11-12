@@ -1,0 +1,13 @@
+qcom-sensing-hub (1.0.1) noble; urgency=low
+
+  * debian : Fixed the debs compilation error
+  * Added not installed file for package
+  * Versioned the shared libs generated
+
+ -- Bhanu Vivek Matsa <bmasta@qti.qualcomm.com>  Mon, 11 Aug 2025 07:33:51 +0000
+
+qcom-sensing-hub (1.0.0) noble; urgency=low
+
+  * Initial release.
+
+ -- Bhanu Vivek Matsa <quic_bmasta@quicinc.com>  Tue, 17 Jun 2025 09:27:47 +0000

@@ -1,0 +1,56 @@
+// @file sns_game_rv.proto
+//
+// @brief Defines the API for Game Rotation Vector Sensors.
+//
+// @copyright
+// Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+//
+// @details A GameRV sensor reports the orientation of the device
+// relative to an unspecified coordinate frame. This is typically 
+// implemented using accelerometer and gyroscope input
+// (and without magnetometer).
+//
+// ## Attribute Requirements:
+// 1. SNS_STD_SENSOR_ATTRID_TYPE is "game_rv"
+// 2. SNS_STD_SENSOR_ATTRID_RIGID_BODY: sns_std_sensor_rigid_body_type
+// 3. SNS_STD_SENSOR_ATTRID_STREAM_TYPE as SNS_STD_SENSOR_STREAM_TYPE_STREAMING.
+// 4. SNS_STD_SENSOR_ATTRID_API attribute contains "sns_game_rv.proto"
+//
+// ## Processing Stream Requests: sns_std_sensor_config
+// sns_std_sensor_config::sample_rate is used to specify the sampling rate (Hz)
+// of the GameRV sensor. Sensor will generate data events at this rate.
+//
+// ## Publishing Stream Events: sns_std_sensor_event
+// Output of the GameRV sensor will be populated in sns_std_sensor_event
+//
+// The orientation is represented by the rotation necessary to align
+// the coordinate frame with the device's coordinates. That is,
+// applying the rotation to the world frame (X,Y,Z) would align them with
+// the device coordinates (x,y,z).
+//
+// The rotation can be seen as rotating the device by an angle theta around an
+// axis rot_axis to go from the reference device orientation to the current
+// device orientation. The rotation is encoded as the four unitless x, y, z, w
+// components of a unit quaternion:
+//
+// @code
+// sns_std_sensor_event::data[0] = rot_axis.x*sin(theta/2)
+// sns_std_sensor_event::data[1] = rot_axis.y*sin(theta/2)
+// sns_std_sensor_event::data[2] = rot_axis.z*sin(theta/2)
+// sns_std_sensor_event::data[3] = cos(theta/2)
+// @endcode
+//
+// Where:
+// - the x, y and z fields of rot_axis are the East-North-Up coordinates
+// of a unit length vector representing the rotation axis
+// - theta is the rotation angle
+//
+// sns_std_sensor_event::status specifies the reliability of the sample value
+// value is of type sns_std_sensor_sample_status. see sns_std_sensor.proto for
+// details.
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_std_sensor.proto";
+
