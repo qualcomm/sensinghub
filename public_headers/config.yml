@@ -1,0 +1,9 @@
+project: https://github.com/qualcomm/sensinghub
+
+branches:
+  master:
+    modes:
+      non-blocking:
+        headers:
+          - common/inc/*.h
+          - session/1.0/inc/*.h
