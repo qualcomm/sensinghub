@@ -1,3 +1,9 @@
+qcom-sensing-hub (1.0.2) noble; urgency=low
+
+  * Add operator override in suid
+
+ -- Bhanu Vivek Matsa <bmasta@qti.qualcomm.com>  Wed, 26 Nov 2025 09:41:31 +0000
+
 qcom-sensing-hub (1.0.1) noble; urgency=low
 
   * debian : Fixed the debs compilation error
