@@ -1,3 +1,9 @@
+qcom-sensing-hub (1.0.3) noble; urgency=low
+
+  * Update Makefile.am and configure.ac for autotools migration
+
+ -- Bhanu Vivek Matsa <bmasta@qti.qualcomm.com>  Fri, 28 Nov 2025 08:18:45 +0000
+
 qcom-sensing-hub (1.0.2) noble; urgency=low
 
   * Add operator override in suid
