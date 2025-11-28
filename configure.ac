@@ -9,7 +9,7 @@ AC_PREREQ(2.61)
 AC_INIT([sensing-hub], 1.0.0)
 
 # Does not strictly follow GNU Coding standards
-AM_INIT_AUTOMAKE([foreign subdir-objects])
+AM_INIT_AUTOMAKE([foreign subdir-objects dist-bzip2 tar-pax])
 
 # Disables auto rebuilding of configure, Makefile.ins
 AM_MAINTAINER_MODE

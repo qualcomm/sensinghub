@@ -3,9 +3,9 @@
 AM_CPPFLAGS = -Werror                           \
               -Wall                             \
               -fexceptions                      \
-              -I./../../common/inc/             \
-              -I./../../session/1.0/inc/        \
-              -I./../../apis/proto/
+              -I$(top_srcdir)/common/inc/             \
+              -I$(top_srcdir)/session/1.0/inc/        \
+              -I$(top_srcdir)/apis/proto/
 
 cpp_sources = SessionClient.cpp
 
