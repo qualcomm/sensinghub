@@ -1,7 +1,7 @@
 project: https://github.com/qualcomm/sensinghub
 
 branches:
-  master:
+  main:
     modes:
       non-blocking:
         headers:
