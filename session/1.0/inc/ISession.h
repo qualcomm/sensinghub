@@ -2,9 +2,7 @@
 /** ============================================================================
  * @file
  *
- * @brief  ISession offers simple and easy interface to the clients to
- * (1) Facilitate interaction with Qualcomm Sensing Hub
- * (2) Abstracts the underlying transport layer mechanism
+ * @brief  Interface to interact with Sensing Hub
  *
  * @copyright Copyright (c) 2024-2025 Qualcomm Innovation Center, Inc. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -34,66 +32,120 @@ using namespace ::com::quic::sensinghub;
 
 /**
  * @class ISession
- * @brief ISession interface class provides methods to interact with QSH framework.
+ * @brief ISession is transport-neutral, OS-agnostic, extensible interface
+ *        for communicating to Sensing Hub. It exposes APIs for clients to:
+ *         (1) Establish a session to Sensing Hub.
+ *         (2) Register callbacks per sensor SUID.
+ *         (3) Send proto-encoded requests and receive responses/events asynchronously.
  *
- * @note Client needs to refer sessionFactory to create an instance of ISession
- * @example Clients can refer to the example code present at :
- *         ../../../examples/SessionClient/SessionClient.cpp
+ * @example Clients can refer to the example code : examples/SessionClient/SessionClient.cpp
  */
 class ISession {
 public:
-/**
- * @brief Error codes if any from ISession
- *
- */
+
+ /**
+  * @brief Error codes, if any, from ISession
+  *
+  */
   enum error
   {
-    RESET /*!< indicates restart / resetting of QSH subsystem due to fatal events */
+    RESET,        /*!< Indicates a reset of the Sensing Hub subsystem.
+                   * - No further events will be recieved on this session
+                   * - The session remains in open state
+                   * - Client may resend the sensor requests to resume event reception
+                   */
+    SERVICE_DOWN  /*!< Indicates unavailability of the Sensing Hub subsystem.
+                   * - No further events will be recieved on this session
+                   * - The session remains in closed state
+                   * - The Client is expected to call open() again to attempt reconnection
+                   */
   };
 
-/**
- * @brief Type alias for ISession respCallBack, errorCallBack and eventCallBack respectively.
- *
- */
-  using respCallBack = std::function<void(const uint32_t respValue, uint64_t clientConnectID)>;
-  using errorCallBack = std::function<void(error errorValue)>;
-  using eventCallBack = std::function<void(const uint8_t *sensorData, size_t sensorDataSize, uint64_t sensorDataTimeStamp)>;
 
   /**
-   * @brief Initiates the client session created using getSession().
-   * Sets up and establishes communication between the client and the QSH framework.
-   * The client should call this function only once per session.
+   * @brief This callback is invoked when a response is received for the registered sensor SUID.
+   *
+   *   Response is an acknowledgement that the client request was sent successfully by the
+   *   underlying transport layer.
+   *   @param[in] respValue        Response status associated with the request.
+   *                               0        - Success
+   *                               non-zero - Failure
+   *   @param[in] clientConnectID  Connection identifier assigned by Sensing Hub for
+   *                               this client session.
+   */
+  using respCallBack = std::function<void(const uint32_t respValue, uint64_t clientConnectID)>;
+
+
+  /**
+   * @brief This callback is invoked when an error occurs in Sensing Hub.
+   *
+   *   @param[in] errorValue    ISession error detected
+   */
+  using errorCallBack = std::function<void(error errorValue)>;
+
+
+  /**
+   * @brief This callback is invoked when an event is received for the registered sensor SUID
+   *
+   *   Event is the sensor data requested by the client.
+   *   @param[in] sensorData              pointer to protocol-buffer-encoded data stream
+   *   @param[in] sensorDataSize          size of the sensorData
+   *   @param[in] sensorDataTimeStamp     timestamp at which sensorData is generated
+   */
+  using eventCallBack = std::function<void(const uint8_t *sensorData, size_t sensorDataSize, uint64_t sensorDataTimeStamp)>;
+
+
+  /**
+   * @brief Open the session and establish a connection to Sensing Hub.
+   *
+   * Initiates the client session created using getSession().
+   * Sets up and establishes communication channel between the client and the Sensing Hub framework.
+   *
+   * This should be called exactly once per ISession instance before
+   * any other operations such as setCallBacks() or sendRequest().
    *
    * @return
-   *   -   0  Success.
-   *   -  -1  Failure.
+   *   -   0  Success (session is now open and ready for use).
+   *   -  -1  Failure (session remains closed).
    */
   virtual int open() = 0;
 
+
   /**
-   * @brief Closes the session for this instance, terminates the communication
-   * between the client and the QSH framework.
-   * The client must call this function at the end of the session to release
-   * resources and avoid memory leaks.
+   * @brief Closes the session for this instance and release associated resources
    *
+   * Terminates the communication channel between the client and the
+   * Sensing Hub framework and frees any resources held by this session.
+   *
+   * After close() is called:
+   * - No further requests should be sent using this ISession instance.
+   * - Registered callbacks will no longer receive events.
+   *
+   *  The client is expected to call close() once it is done with the
+   *  session to avoid leaks and dangling resources.
    */
   virtual void close() = 0;
 
+
   /**
-   * @brief Set the callbacks for the given suid.
+   * @brief Set the callbacks for specified sensor SUID.
    *        Client needs to call only once per given suid.
    *
-   * @param [in] suid      SUID for which callbacks are to be registered.
-   * @param [in] respCB    Response callback pointer.
-   * @param [in] errorCB   Error callback pointer.
-   * @param [in] eventCB   Event callback pointer.
+   * Associates response, error, and event callbacks with the given SUID for this session.
+   * These callbacks are invoked for messages received from Sensing Hub that correspond to the specified SUID.
+   *
+   * @param [in] suid      Unique SUID of the sensor for which callbacks are set.
+   * @param [in] respCB    respCallBack pointer (may be nullptr).
+   * @param [in] errorCB   errorCallBack pointer (may be nullptr)
+   * @param [in] eventCB   eventCallBack pointer (may be nullptr).
    *
    * @note All parameters are mandatory.
    * - Incase SUID is already registered, callbacks are updated with new ones.
    * - The client may pass nullptr, incase any callback function is not defined / required.
-   * - To unset the callbacks for already registered SUID,
-   *   the client may pass nullptr for all the three callback functions.
-   * - For any unregistered SUID, passing nullptr for all callback functions is considered as an error.
+   * - For an already registered SUID, passing nullptr for all callbacks
+   *   effectively unregisters that SUID.
+   * - For a new/unregistered SUID, passing nullptr for all callback
+   *   functions is considered as an error.
    *
    * @return
    *   - 0  Success.
@@ -101,28 +153,32 @@ public:
    */
   virtual int setCallBacks(suid suid, respCallBack respCB, errorCallBack errorCB, eventCallBack eventCB) = 0;
 
+
   /**
-   * @brief Asynchronously sends a protocol buffer (proto)
-   * encoded message to the QSH framework
+   * @brief Send an asynchronous request for a given sensor.
    *
-   * @param [in] suid    Unique SUID of the sensor for which request will be sent.
+   * Sends a protocol-buffer-encoded request message to the Sensing Hub for the
+   * specified SUID.
+   *
+   * @param [in] suid    Unique SUID of the target sensor.
    * @param [in] message Proto encoded request message, formulated with
    *                     client API for the given sensor.
    *
    * @return
    *    - 0   Success
    *    - -1  Failure
-   *         - if client tries to send request over a closed session
-   *         - if encoded message size exceeds the permissible size
-   *         - if sending message fails due to channel related issue
+   *        - Session is not open or already closed.
+   *        - Encoded message size exceeds the allowed limit.
+   *        - Underlying transport/channel error while sending.
    */
   virtual int sendRequest(suid suid, std::string message) = 0;
 
+
   /**
    * @brief Destructor for ISession.
-   * Once the usecase is done, to avoid the memory leaks,
-   * clients are expected to delete the ISession instance.
    *
+   * Clients are expected to delete the ISession instance once the use
+   * case is complete to avoid memory leaks.
    */
   virtual ~ISession(){};
 protected:
