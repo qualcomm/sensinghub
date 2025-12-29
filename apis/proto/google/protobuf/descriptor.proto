@@ -58,6 +58,31 @@ message FileDescriptorSet {
   repeated FileDescriptorProto file = 1;
 }
 
+// The full set of known editions.
+enum Edition {
+  // A placeholder for an unknown edition value.
+  EDITION_UNKNOWN = 0;
+
+  // Legacy syntax "editions".  These pre-date editions, but behave much like
+  // distinct editions.  These can't be used to specify the edition of proto
+  // files, but feature definitions must supply proto2/proto3 defaults for
+  // backwards compatibility.
+  EDITION_PROTO2 = 998;
+  EDITION_PROTO3 = 999;
+
+  // Editions that have been released.  The specific values are arbitrary and
+  // should not be depended on, but they will always be time-ordered for easy
+  // comparison.
+  EDITION_2023 = 1000;
+
+  // Placeholder editions for testing feature resolution.  These should not be
+  // used or relyed on outside of tests.
+  EDITION_1_TEST_ONLY = 1;
+  EDITION_2_TEST_ONLY = 2;
+  EDITION_99997_TEST_ONLY = 99997;
+  EDITION_99998_TEST_ONLY = 99998;
+  EDITION_99999_TEST_ONLY = 99999;
+}
 // Describes a complete .proto file.
 message FileDescriptorProto {
   optional string name = 1;     // file name, relative to root of source tree
@@ -88,6 +113,9 @@ message FileDescriptorProto {
   // The syntax of the proto file.
   // The supported values are "proto2" and "proto3".
   optional string syntax = 12;
+
+  // The edition of the proto file.
+  optional Edition edition = 14;
 }
 
 // Describes a message type.

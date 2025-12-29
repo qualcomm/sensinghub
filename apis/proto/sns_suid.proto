@@ -3,12 +3,43 @@
 // @brief Defines standard message types to request and receive SUIDs.
 //
 // @copyright
-// Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
+// Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 //
 // @details This file provides definitions for requests and parameters for
 // requesting SUID of a given data type. It also provides the
 // definition of the suid response event.
+
+// ## Attribute Requirements:
+// 1. SNS_STD_SENSOR_ATTRID_TYPE: "suid"
+// 2. SNS_STD_SENSOR_ATTRID_STREAM_TYPE: SNS_STD_SENSOR_STREAM_TYPE_SINGLE_OUTPUT
+// 3. SNS_STD_SENSOR_ATTRID_API: "sns_suid.proto"
+//
+// ## Processing Stream Requests:
+// - SNS_SUID_MSGID_SNS_SUID_REQ is used to request for SUIDs that support the specified Data Type.
+//   Searches all registered sensors for matching data_type attribute
+//   * Supports one-shot (register_updates=false) or continuous (register_updates=true) requests
+//   * Can return default sensor only (default_only=true) or all matches (default_only=false)
+//   * Responds with SNS_SUID_MSGID_SNS_SUID_EVENT containing matching SUIDs
+//   * Sends SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT when discovery completes
+//   * One-shot requests are automatically cleaned up after discovery completes
+//   * Continuous requests remain active until client disconnects
+//
+// ## Publishing Stream Events:
+// - SNS_SUID_MSGID_SNS_SUID_EVENT is used to send the event containing SUIDs that support the requested Data Type.
+//   Sent in response to SNS_SUID_REQ, contains SUIDs matching the requested data type.
+//   May be sent multiple times as sensors become available
+//
+// - SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT is used to send the event containing the suid discovery complete notification.
+//   Sent to notify clients that sensor discovery is complete.
+//   After receiving this event:
+//   * All sensors that will be available have been discovered
+//   * Clients can safely proceed with sensor initialization
+//   This event is sent only once, either:
+//   - After physical sensors complete initialization, OR
+//   - After SUID sensor starts (timeout fallback), OR
+//   - Immediately to clients connecting after discovery is complete
+//   The event timestamp in this event indicates when suid discovery actually completed
 
 syntax = "proto2";
 import "nanopb.proto";
@@ -26,6 +57,10 @@ enum sns_suid_msgid {
   // @brief Event containing SUIDs that support the requested Data Type.
   // Message: sns_suid_event
   SNS_SUID_MSGID_SNS_SUID_EVENT = 768;
+
+  // @brief Event containing the suid discovery complete notification.
+  // Message: sns_suid_discovery_done_event
+  SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT = 769;
 }
 
 // @brief UID for the SUID Sensor
@@ -77,4 +112,11 @@ message sns_suid_event {
 
   // @brief UIDs of the Sensors supporting the data type. 
   repeated sns_std_suid suid = 2;
+}
+
+// @brief Event specifying the suid discovery complete notification SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT.
+// This event is to notify the external clients that all the sensors in the framework
+// have either published available or de-initialized and not available, as a response to the client's SUID request
+message sns_suid_discovery_done_event {
+
 }

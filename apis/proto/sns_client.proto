@@ -127,14 +127,23 @@ message sns_client_version_request_msg {
 
 // @brief Version Response Message
 message sns_client_version_response_msg {
-  // @brief Major version
+  // @brief Client's Major version
   optional uint32 major = 1;
 
-  // @brief Minor version
+  // @brief Client's Minor version
   optional uint32 minor = 2;
 
-  // @brief Patch version
+  // @brief Client's Patch version
   optional uint32 patch = 3;
+
+  // @brief Sensor's Major version
+  optional uint32 sensor_major = 4;
+
+  // @brief Sensor's Minor version
+  optional uint32 sensor_minor = 5;
+
+  // @brief Sensor's Patch version
+  optional uint32 sensor_patch = 6;
 }
 
 // @brief Event Message
