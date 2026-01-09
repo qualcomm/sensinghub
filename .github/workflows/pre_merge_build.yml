@@ -1,0 +1,28 @@
+
+name: pre_merge_build
+
+on:
+  workflow_dispatch:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - '.github/**'
+  push:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - '.github/**'
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      event_name: ${{ github.event_name }}
+      pr_ref: ${{ github.event.pull_request.head.ref }}
+      pr_repo: ${{ github.event.pull_request.head.repo.full_name }}
+      build_args: "--host=arm-poky-linux --prefix=/usr --enable-shared"
+      docker_image: "sensinghub:latest"
