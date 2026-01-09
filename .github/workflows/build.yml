@@ -1,0 +1,382 @@
+
+name: _build
+
+on:
+  workflow_call:
+    inputs:
+      event_name:
+        required: false
+        type: string
+      pr_ref:
+        required: false
+        type: string
+      base_ref:
+        required: false
+        type: string
+        description: Optional base reference to use for building
+        default: ${{ github.ref_name }}
+      pr_repo:
+        required: false
+        type: string
+      build_args:
+        required: true
+        type: string
+      build_script:
+        required: false
+        type: string
+        default: 'ci/build.sh'
+      docker_image:
+        required: false
+        type: string
+        default: 'sensinghub:latest'
+      build_out_root:
+        required: false
+        type: string
+        default: 'build'
+      modified_tar_name:
+        required: false
+        type: string
+        default: 'qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz'
+
+env:
+  RB3GEN2_ROOTFS_KEY: qualcomm-linux-stg/qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+  S3_BUCKET: qli-stg-gen-qlnx-gh-artifacts
+
+jobs:
+  build:
+    runs-on:
+      group: GHA-Gen-Qlnx-Stg-SelfHosted-RG
+      labels: [ self-hosted, gen-qlnx-stg-u2404-x64-md-od-ephem ]
+    strategy:
+      fail-fast: false
+    outputs:
+      s3_location: ${{ steps.upload-artifacts.outputs.s3_location }}
+
+    steps:
+      - name: Ensure workspace ownership (pre-check)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          : "${GITHUB_WORKSPACE:=${{ github.workspace }}}"
+          OWNER_UID="$(id -u)"
+          OWNER_GID="$(id -g)"
+          if [ -d "${GITHUB_WORKSPACE}" ]; then
+            sudo chown -R "${OWNER_UID}:${OWNER_GID}" "${GITHUB_WORKSPACE}" || true
+          fi
+          
+      - name: Checkout base repo
+        uses: actions/checkout@v4
+
+      - name: Sync Codebase
+        id: sync
+        uses: ./.github/actions/sync
+        with:
+          event_name: ${{ inputs.event_name }}
+          pr_ref: ${{ inputs.pr_ref }}
+          pr_repo: ${{ inputs.pr_repo }}
+          base_ref: ${{ inputs.base_ref }}
+
+      - name: Compute runner identity
+        id: idvars
+        shell: bash
+        run: |
+          set -euxo pipefail
+          RUNNER_UID="$(id -u)"
+          RUNNER_GID="$(id -g)"
+          RUNNER_USER="${USER:-runner}"
+          echo "RUNNER_UID=${RUNNER_UID}" >> "$GITHUB_OUTPUT"
+          echo "RUNNER_GID=${RUNNER_GID}" >> "$GITHUB_OUTPUT"
+          echo "RUNNER_USER=${RUNNER_USER}" >> "$GITHUB_OUTPUT"
+
+
+      # --- Rootfs image handling ---
+      - name: Verify RB3 Gen2 rootfs image exists in S3
+        shell: bash
+        run: |
+          set -euxo pipefail
+          aws s3api head-object \
+            --bucket "${{ env.S3_BUCKET }}" \
+            --key "${{ env.RB3GEN2_ROOTFS_KEY }}" \
+            >/dev/null 2>&1 || {
+              echo "ERROR: S3 key ${{ env.RB3GEN2_ROOTFS_KEY }} not found in bucket ${{ env.S3_BUCKET }}." >&2
+              exit 1
+            }
+
+      - name: Download RB3 Gen2 rootfs image
+        shell: bash
+        run: |
+          set -euxo pipefail
+          aws s3 cp "s3://${{ env.S3_BUCKET }}/${{ env.RB3GEN2_ROOTFS_KEY }}" .
+          ls -lh "./qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz"
+
+      # --- Normalize & record original tar top-level entries ---
+      - name: Inspect original tar top-level entries (normalized)
+        id: orig_tar_meta
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ORIG_TAR="./qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz"
+          mapfile -t TOPLEVELS < <(
+            tar -tzf "${ORIG_TAR}" \
+            | sed -E 's#^\./##' \
+            | awk -F/ '{print $1}' \
+            | awk 'NF && $0!="."' \
+            | sort -u
+          )
+          if [ ${#TOPLEVELS[@]} -eq 0 ]; then
+            echo "ERROR: No entries found in original tar" >&2
+            exit 1
+          fi
+          echo "Original tar normalized top-level entries:"
+          printf '%s\n' "${TOPLEVELS[@]}"
+          echo "TOPLEVELS=${TOPLEVELS[*]}" >> "$GITHUB_OUTPUT"
+
+      - name: Extract RB3 Gen2 rootfs image (non-destructive)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Extract directly into current workspace (no extra 'rootfs/' folder)
+          tar -xzf qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+          echo "Extracted files (workspace top-level):"
+          ls -la | sed -n '1,200p'
+          echo "Expected top-level entries from original tar:"
+          echo "${{ steps.orig_tar_meta.outputs.TOPLEVELS }}"
+
+      - name: Build Docker image locally
+        shell: bash
+        run: |
+          set -euxo pipefail
+          docker build \
+            -t "${{ inputs.docker_image }}" \
+            --build-arg USER="${{ steps.idvars.outputs.RUNNER_USER }}" \
+            --build-arg USER_ID="${{ steps.idvars.outputs.RUNNER_UID }}" \
+            --build-arg GROUP_ID="${{ steps.idvars.outputs.RUNNER_GID }}" \
+            -f Dockerfile .
+
+      - name: Export env for composite
+        shell: bash
+        run: |
+          set -euxo pipefail
+          echo "BUILD_SCRIPT=${{ inputs.build_script }}" >> "$GITHUB_ENV"
+          echo "BUILD_ARGS=${{ inputs.build_args }}" >> "$GITHUB_ENV"
+
+      - name: Build via composite
+        uses: ./.github/actions/build
+        with:
+          docker_image: ${{ inputs.docker_image }}
+
+      # --- Create build.tar (top-level 'build/' inside the archive) ---
+      - name: Create build.tar (top-level 'build/' inside the archive)
+        id: create_build_tar
+        shell: bash
+        run: |
+          set -euxo pipefail
+          : "${GITHUB_WORKSPACE:=${{ github.workspace }}}"
+          BUILD_DIR="${GITHUB_WORKSPACE}/build"
+          TAR_PATH="${GITHUB_WORKSPACE}/build.tar"
+          mkdir -p "${BUILD_DIR}"
+          rm -f "${TAR_PATH}"
+          tar --dereference -czf "${TAR_PATH}" -C "${GITHUB_WORKSPACE}" build
+          echo "Build tar created at ${TAR_PATH}"
+          echo "tar_path=${TAR_PATH}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify build.tar contents (non-destructive)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          TAR_PATH="${{ steps.create_build_tar.outputs.tar_path }}"
+          echo "Listing archive contents for verification:"
+          tar -tzf "${TAR_PATH}" | sed -n '1,80p'
+          
+      # --- Locate rootfs image and capture mtime BEFORE modification ---
+      - name: Locate rootfs image
+        id: locate_img
+        shell: bash
+        run: |
+          set -euxo pipefail
+          IMG_PATH="$(find . -maxdepth 4 -type f \( -name 'rootfs*.img' -o -name '*.ext4' \) | head -n1 || true)"
+          if [ -z "${IMG_PATH}" ]; then
+            echo "ERROR: Could not find rootfs*.img (or *.ext4) in workspace." >&2
+            echo "Workspace contents (top-level):"; ls -la | sed -n '1,200p'
+            exit 1
+          fi
+          echo "IMG_PATH=${IMG_PATH}" >> "$GITHUB_OUTPUT"
+          echo "IMG_PATH=${IMG_PATH}" >> "$GITHUB_ENV"
+
+          echo "==> File type:"
+          file "${IMG_PATH}" || true
+
+          echo "==> Pre-modification timestamp of the image file:"
+          ls -la --time-style=full-iso "${IMG_PATH}"
+
+      - name: Capture image mtime (before)
+        id: mtime_before
+        shell: bash
+        run: |
+          set -euxo pipefail
+          IMG_PATH="${{ steps.locate_img.outputs.IMG_PATH }}"
+          MTIME_BEFORE="$(stat -c '%y' "${IMG_PATH}")"
+          echo "mtime_before=${MTIME_BEFORE}" >> "$GITHUB_OUTPUT"
+
+      # --- Modify rootfs INSIDE Docker (mount -o loop, copy, umount) ---
+      - name: Modify rootfs inside Docker
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Run as root in a privileged container, bind-mount the workspace
+          docker run --rm --privileged --user root \
+            -v "${GITHUB_WORKSPACE}:/workspace" \
+            -e BUILD_OUT_ROOT="${{ inputs.build_out_root }}" \
+            "${{ inputs.docker_image }}" \
+            bash -lc '
+              set -euxo pipefail
+
+              # Locate image inside container
+              IMG_PATH="$(find /workspace -maxdepth 4 -type f \( -name "rootfs*.img" -o -name "*.ext4" \) | head -n1 || true)"
+              if [ -z "${IMG_PATH}" ]; then
+                echo "ERROR: Could not find rootfs image in /workspace" >&2
+                ls -la /workspace | sed -n "1,200p"
+                exit 1
+              fi
+              echo "Container: IMG_PATH=${IMG_PATH}"
+
+              # Detect build output root inside container
+              CANDIDATES=(
+                "/workspace/${BUILD_OUT_ROOT}"
+                "/workspace/build/output"
+                "/workspace/out"
+                "/workspace/dist"
+              )
+              SRC_ROOT=""
+              for cand in "${CANDIDATES[@]}"; do
+                if [ -d "${cand}/usr" ] || [ -d "${cand}/etc" ]; then
+                  SRC_ROOT="${cand}"
+                  break
+                fi
+              done
+              if [ -z "${SRC_ROOT}" ]; then
+                echo "ERROR: No build output root found with usr/ or etc/ under /workspace" >&2
+                ls -la /workspace | sed -n "1,200p"
+                exit 1
+              fi
+              echo "Container: Selected SRC_ROOT=${SRC_ROOT}"
+              ls -la --time-style=full-iso "${SRC_ROOT}" | sed -n "1,100p"
+
+              # Mount the image using loop (requires --privileged)
+              MNT_DIR="/mnt/rootfs"
+              mkdir -p "${MNT_DIR}"
+              mount -o rw,loop "${IMG_PATH}" "${MNT_DIR}"
+
+              echo "Container: Mounted filesystem details:"
+              df -hT "${MNT_DIR}" || true
+
+              echo "Container: Before copy timestamps:"
+              ls -la --time-style=full-iso "${MNT_DIR}/usr" || true
+              ls -la --time-style=full-iso "${MNT_DIR}/etc" || true
+
+              # Copy with attributes preserved
+              copy_dir_contents () {
+                local src_dir="$1"
+                local dest_dir="$2"
+                if [ -d "${src_dir}" ]; then
+                  echo "Copying ${src_dir}/. -> ${dest_dir}/"
+                  mkdir -p "${dest_dir}"
+                  cp -av "${src_dir}/." "${dest_dir}/"
+                else
+                  echo "WARN: ${src_dir} not found. Skipping."
+                fi
+              }
+
+              copy_dir_contents "${SRC_ROOT}/usr" "${MNT_DIR}/usr"
+              copy_dir_contents "${SRC_ROOT}/etc" "${MNT_DIR}/etc"
+
+              sync
+
+              echo "Container: After copy timestamps:"
+              ls -la --time-style=full-iso "${MNT_DIR}/usr" | sed -n "1,150p" || true
+              ls -la --time-style=full-iso "${MNT_DIR}/etc" | sed -n "1,150p" || true
+
+              # Unmount cleanly
+              umount "${MNT_DIR}"
+            '
+
+      - name: Verify image mtime changed (after)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          IMG_PATH="${{ steps.locate_img.outputs.IMG_PATH }}"
+          MTIME_AFTER="$(stat -c '%y' "${IMG_PATH}")"
+          echo "Before: ${{ steps.mtime_before.outputs.mtime_before }}"
+          echo "After:  ${MTIME_AFTER}"
+          if [ "${MTIME_AFTER}" = "${{ steps.mtime_before.outputs.mtime_before }}" ]; then
+            echo "ERROR: Image mtime did not change — copy may have failed." >&2
+            exit 1
+          fi
+          echo "==> Post-modification timestamp of the image file:"
+          ls -la --time-style=full-iso "${IMG_PATH}"
+          
+      # --- Repack extracted folder (preserve original top-level layout & name) ---
+      - name: Create modified rootfs tar (preserve layout & name)
+        id: repack_rootfs
+        shell: bash
+        run: |
+          set -euxo pipefail
+          : "${GITHUB_WORKSPACE:=${{ github.workspace }}}"
+          ART_DIR="${GITHUB_WORKSPACE}/artifacts"
+          mkdir -p "${ART_DIR}"
+
+          MOD_TAR="${ART_DIR}/${{ inputs.modified_tar_name }}"
+
+          # Read normalized top-levels
+          IFS=' ' read -r -a TOPLEVELS <<< "${{ steps.orig_tar_meta.outputs.TOPLEVELS }}"
+
+          cd "${GITHUB_WORKSPACE}"
+
+          # Exclude artifacts dir and the output tar itself to avoid "file changed as we read it"
+          tar --exclude='./artifacts' \
+              --exclude="${MOD_TAR}" \
+              -czf "${MOD_TAR}" "${TOPLEVELS[@]}"
+
+          echo "modified_tar=${MOD_TAR}" >> "$GITHUB_OUTPUT"
+          echo "==> Verify tar contents (first 100):"
+          tar -tzf "${MOD_TAR}" | sed -n '1,100p'
+
+      # === Upload BOTH build.tar and modified rootfs tar to S3 in a SINGLE call (avoid 409 conflicts) ===
+      - name: Create file list (build.tar + modified rootfs tar)
+        id: make_file_list_all
+        shell: bash
+        run: |
+          set -euxo pipefail
+          WORKSPACE="${GITHUB_WORKSPACE}"
+          ARTIFACTS_DIR="${WORKSPACE}/artifacts"
+          FILE_LIST_ALL="${ARTIFACTS_DIR}/file_list_all.txt"
+          mkdir -p "${ARTIFACTS_DIR}"
+          : > "${FILE_LIST_ALL}"
+          echo "${{ steps.create_build_tar.outputs.tar_path }}" >> "${FILE_LIST_ALL}"
+          echo "${{ steps.repack_rootfs.outputs.modified_tar }}" >> "${FILE_LIST_ALL}"
+          echo "==> Combined artifacts list:"; cat "${FILE_LIST_ALL}"
+          echo "file_list_all=${FILE_LIST_ALL}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifacts to S3 (single call)
+        id: upload-artifacts
+        uses: ./.github/actions/aws_s3_helper
+        with:
+          s3_bucket: ${{ env.S3_BUCKET }}
+          local_file: ${{ steps.make_file_list_all.outputs.file_list_all }}
+          mode: multi-upload
+          upload_location: qualcomm-linux-stg/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}
+
+  publish_summary:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Publish build summary
+        run: |
+          echo "# Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Build successful!" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker image: ${{ inputs.docker_image }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Build script: ${{ inputs.build_script }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Build args: ${{ inputs.build_args }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Uploaded to S3 bucket: ${{ env.S3_BUCKET }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Upload location: qualcomm-linux-stg/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_STEP_SUMMARY

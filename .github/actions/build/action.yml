@@ -1,0 +1,46 @@
+
+name: build
+description: Build Action
+
+inputs:
+  docker_image:
+    required: true
+    description: Docker image for build
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build Project (Docker)
+      id: build
+      shell: bash
+      run: |
+        set -euxo pipefail
+
+        : "${GITHUB_WORKSPACE:=${{ github.workspace }}}"
+        echo "Workspace: ${GITHUB_WORKSPACE}"
+        echo "Docker image: ${{ inputs.docker_image }}"
+
+        # Validate build script provided via environment
+        if [[ -z "${BUILD_SCRIPT:-}" ]]; then
+          echo "ERROR: BUILD_SCRIPT is not set."
+          exit 1
+        fi
+
+        # Run build inside Docker as runner user (UID/GID baked into image)
+        docker run \
+          --rm \
+          -v "${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}" \
+          -w "${GITHUB_WORKSPACE}" \
+          -e GITHUB_WORKSPACE="${GITHUB_WORKSPACE}" \
+          -e BUILD_ARGS="${BUILD_ARGS:-}" \
+          -e BUILD_SCRIPT="${BUILD_SCRIPT}" \
+          --privileged --user root \
+          "${{ inputs.docker_image }}" \
+          bash -c '
+            set -euxo pipefail
+            # Ensure build script exists
+            [[ -f "${BUILD_SCRIPT}" ]] || { echo "Build script not found: ${BUILD_SCRIPT}"; exit 1; }
+
+            # shellcheck disable=SC1090
+            source "${BUILD_SCRIPT}"
+          '
