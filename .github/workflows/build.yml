@@ -39,7 +39,7 @@ on:
         default: 'qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz'
 
 env:
-  RB3GEN2_ROOTFS_KEY: qualcomm/qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+  RB3GEN2_ROOTFS_KEY: qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
   S3_BUCKET: qli-prd-sensors-gh-artifacts
 
 jobs:
@@ -380,3 +380,4 @@ jobs:
           echo "- Build args: ${{ inputs.build_args }}" >> $GITHUB_STEP_SUMMARY
           echo "- Uploaded to S3 bucket: ${{ env.S3_BUCKET }}" >> $GITHUB_STEP_SUMMARY
           echo "- Upload location: qualcomm/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_STEP_SUMMARY
+
