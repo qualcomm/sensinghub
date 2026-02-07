@@ -1,0 +1,35 @@
+cc_library_shared {
+    name: "libqshUtil",
+    owner: "qti",
+    vendor: true,
+    srcs: [
+        "src/qshLog.cpp",
+        "src/qshWakelock.cpp",
+        "src/qshSSR.cpp",
+        "src/qshJsonParser.cpp",
+        "src/suidLookUp.cpp",
+    ],
+    header_libs: [
+        "libsensinghubcommon_headers",
+    ],
+    cflags: [
+        "-Werror",
+        "-Wall",
+        "-Wno-unused-parameter",
+        "-fexceptions",
+        "-DUSE_ANDROID_LOG",
+    ],
+    sanitize:{
+        integer_overflow: true,
+    },
+    local_include_dirs: ["./inc"],
+    export_include_dirs: ["./inc"],
+    shared_libs: [
+        "libutils",
+        "libcutils",
+        "liblog",
+        "libprotobuf-cpp-lite",
+        "libsensinghubsession",
+        "libsensinghubapi",
+    ],
+}

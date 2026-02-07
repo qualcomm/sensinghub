@@ -3,7 +3,7 @@
 // @brief Defines standard message types to request and receive SUIDs.
 //
 // @copyright
-// Copyright (c) 2023-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 //
 // @details This file provides definitions for requests and parameters for
