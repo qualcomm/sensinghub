@@ -4,7 +4,7 @@
  *
  * @brief  Interface to interact with Sensing Hub
  *
- * @copyright Copyright (c) 2024-2025 Qualcomm Innovation Center, Inc. All rights reserved.
+ * @copyright Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
  * SPDX-License-Identifier: BSD-3-Clause-Clear
  *
  * ===========================================================================*/

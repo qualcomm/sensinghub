@@ -74,6 +74,13 @@ AC_ARG_ENABLE(versioned-lib,
         [VERSIONED_LIB="no"])
 AM_CONDITIONAL([ENABLE_VERSIONED_LIB], [test "x${VERSIONED_LIB}" != "xno"])
 
+PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.16, dummy=yes, AC_MSG_ERROR(GLib >= 2.16 is required))
+GLIB_CFLAGS="$GLIB_CFLAGS"
+GLIB_LIBS="$GLIB_LIBS"
+AC_SUBST(GLIB_CFLAGS)
+AC_SUBST(GLIB_LIBS)
+
+AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 m4_define([LT_MAJOR], [1])
 m4_define([LT_MINOR], [0])
 m4_define([LT_PATCH], [0])
@@ -86,6 +93,7 @@ AC_CONFIG_FILES([             \
         apis/proto/Makefile   \
         session/1.0/Makefile  \
         examples/SessionClient/Makefile \
+        utils/Makefile \
         sensing-hub.pc
                ])
 AC_OUTPUT
