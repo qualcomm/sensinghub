@@ -1,3 +1,15 @@
+qcom-sensing-hub (1.0.6) noble; urgency=low
+
+  * Compile sensinghub code against latest protobuf package
+
+ -- Bhanu Vivek Matsa <bmasta@qti.qualcomm.com>  Mon, 09 Feb 2026 11:58:27 +0000
+
+qcom-sensing-hub (1.0.5) noble; urgency=low
+
+  * Port utils code into sensinghub
+
+ -- Bhanu Vivek Matsa <bmasta@qti.qualcomm.com>  Fri, 06 Feb 2026 09:47:31 +0000
+
 qcom-sensing-hub (1.0.4) noble; urgency=low
 
   * Update ISession Headers Documentation
