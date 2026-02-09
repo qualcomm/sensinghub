@@ -39,8 +39,11 @@ on:
         default: 'qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz'
 
 env:
-  RB3GEN2_ROOTFS_KEY: qualcomm-linux-stg/qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
-  S3_BUCKET: qli-prd-sensors-gh-artifacts
+  RB3GEN2_ROOTFS_KEY: qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+  S3_BUCKET: qcom-prd-gh-artifacts
+  PRD_BUCKET: qcom-prd-gh-artifacts         # source bucket (PROD)
+  NIGHTLY_REPO: qualcomm-linux/meta-qcom
+  NIGHTLY_WORKFLOW_FILE: nightly-build.yml
 
 jobs:
   build:
@@ -67,15 +70,58 @@ jobs:
       - name: Checkout base repo
         uses: actions/checkout@v4
 
-      - name: Sync Codebase
-        id: sync
-        uses: ./.github/actions/sync
-        with:
-          event_name: ${{ inputs.event_name }}
-          pr_ref: ${{ inputs.pr_ref }}
-          pr_repo: ${{ inputs.pr_repo }}
-          base_ref: ${{ inputs.base_ref }}
+      
+      - name: Show AWS caller identity (sanity)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          aws sts get-caller-identity || true
+          aws configure list || true
+    
+      # --- Resolve bucket regions (no manual AWS_REGION required) ---
+      - name: Resolve PRD bucket region (with fallback)
+        id: prd_region
+        shell: bash
+        env:
+          PRD_BUCKET: ${{ env.PRD_BUCKET }}
+        run: |
+          set -euo pipefail
+          # Try AWS API
+          REG="$(aws s3api get-bucket-location --bucket "${PRD_BUCKET}" --query 'LocationConstraint' --output text 2>/dev/null || true)"
+          # Normalize legacy/empty
+          if [ "${REG}" = "None" ] || [ -z "${REG}" ] || [ "${REG}" = "null" ]; then REG="us-east-1"; fi
+          if [ "${REG}" = "EU" ]; then REG="eu-west-1"; fi
+          # Fallback via HTTP header if needed
+          if [ -z "${REG}" ] || [ "${REG}" = "unknown" ]; then
+            REG="$(curl -sI "https://${PRD_BUCKET}.s3.amazonaws.com" | awk -F': ' '/x-amz-bucket-region:/ {print tolower($2)}' | tr -d '\r' || true)"
+          fi
+          if [ -z "${REG}" ]; then
+            REG="$(curl -sI "https://s3.amazonaws.com/${PRD_BUCKET}" | awk -F': ' '/x-amz-bucket-region:/ {print tolower($2)}' | tr -d '\r' || true)"
+          fi
+          if [ -z "${REG}" ]; then REG="us-east-1"; fi
+          echo "region=${REG}" >> "$GITHUB_OUTPUT"
+          echo "PRD bucket ${PRD_BUCKET} region = ${REG}"
 
+      - name: Resolve prod bucket region (with fallback)
+        id: prod_region
+        shell: bash
+        env:
+          S3_BUCKET: ${{ env.S3_BUCKET }}
+        run: |
+          set -euo pipefail
+          REG="$(aws s3api get-bucket-location --bucket "${S3_BUCKET}" --query 'LocationConstraint' --output text 2>/dev/null || true)"
+          if [ "${REG}" = "None" ] || [ -z "${REG}" ] || [ "${REG}" = "null" ]; then REG="us-east-1"; fi
+          if [ "${REG}" = "EU" ]; then REG="eu-west-1"; fi
+          if [ -z "${REG}" ] || [ "${REG}" = "unknown" ]; then
+            REG="$(curl -sI "https://${S3_BUCKET}.s3.amazonaws.com" | awk -F': ' '/x-amz-bucket-region:/ {print tolower($2)}' | tr -d '\r' || true)"
+          fi
+          if [ -z "${REG}" ]; then
+            REG="$(curl -sI "https://s3.amazonaws.com/${S3_BUCKET}" | awk -F': ' '/x-amz-bucket-region:/ {print tolower($2)}' | tr -d '\r' || true)"
+          fi
+          if [ -z "${REG}" ]; then REG="us-east-1"; fi
+          echo "region=${REG}" >> "$GITHUB_OUTPUT"
+          echo "prod bucket ${S3_BUCKET} region = ${REG}"
+          
       - name: Compute runner identity
         id: idvars
         shell: bash
@@ -88,8 +134,77 @@ jobs:
           echo "RUNNER_GID=${RUNNER_GID}" >> "$GITHUB_OUTPUT"
           echo "RUNNER_USER=${RUNNER_USER}" >> "$GITHUB_OUTPUT"
 
+      # --- Resolve latest successful nightly (no branch filter) ---
+      - name: Resolve latest successful nightly (no branch filter)
+        id: nightly
+        shell: bash
+        env:
+          NIGHTLY_REPO: ${{ env.NIGHTLY_REPO }}
+          NIGHTLY_WORKFLOW_FILE: ${{ env.NIGHTLY_WORKFLOW_FILE }}
+        run: |
+          set -euxo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+          API_URL="https://api.github.com/repos/${NIGHTLY_REPO}/actions/workflows/${NIGHTLY_WORKFLOW_FILE}/runs?status=completed&conclusion=success&per_page=1"
+          RESP="$(curl -sS -H "Accept: application/vnd.github+json" "${API_URL}")"
+          RUN_ID="$(echo "${RESP}" | jq -r '.workflow_runs[0].id')"
+          RUN_ATTEMPT="$(echo "${RESP}" | jq -r '.workflow_runs[0].run_attempt')"
+          if [ -z "${RUN_ID}" ] || [ "${RUN_ID}" = "null" ]; then
+            echo "ERROR: No successful nightly run found"; echo "${RESP}" | jq .; exit 1
+          fi
+          echo "RUN_ID=${RUN_ID}" >> "$GITHUB_OUTPUT"
+          echo "RUN_ATTEMPT=${RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
+          echo "Resolved RUN_ID=${RUN_ID}, RUN_ATTEMPT=${RUN_ATTEMPT}"
 
-      # --- Rootfs image handling ---
+      # (Optional but useful) Pre-check to distinguish wrong key / perms / KMS
+      - name: Pre-check PROD object access (diagnostic)
+        shell: bash
+        env:
+          PRD_BUCKET: ${{ env.PRD_BUCKET }}
+        run: |
+          set -euxo pipefail
+          SRC_KEY="qualcomm-linux/meta-qcom/${{ steps.nightly.outputs.RUN_ID }}-${{ steps.nightly.outputs.RUN_ATTEMPT }}/qcom-distro/rb3gen2-core-kit/qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz"
+          echo "Caller identity:"; aws sts get-caller-identity || true
+          echo "Head-object against s3://${PRD_BUCKET}/${SRC_KEY}:"
+          aws s3api head-object --bucket "${PRD_BUCKET}" --key "${SRC_KEY}" --region "${{ steps.prd_region.outputs.region }}" || true
+
+      # --- Download from PRD bucket using your helper ---
+      - name: Download nightly rootfs from PRD
+        uses: ./.github/actions/aws_s3_helper
+        env:
+          # Ensure helper/CLI uses the detected PRD region
+          AWS_REGION: ${{ steps.prd_region.outputs.region }}
+        with:
+          mode: download
+          s3_bucket: ${{ env.PRD_BUCKET }}
+          download_file: >-
+            qualcomm-linux/meta-qcom/${{ steps.nightly.outputs.RUN_ID }}-${{ steps.nightly.outputs.RUN_ATTEMPT }}/qcom-distro/rb3gen2-core-kit/qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+          download_location: .
+          # If your helper supports this input, it will use it; otherwise ignored.
+          region: ${{ steps.prd_region.outputs.region }}
+
+      # --- Upload to PROD bucket root folder: qualcomm ---
+      - name: Upload nightly rootfs to PROD (qualcomm)
+        uses: ./.github/actions/aws_s3_helper
+        env:
+          AWS_REGION: ${{ steps.prod_region.outputs.region }}
+        with:
+          mode: single-upload
+          s3_bucket: ${{ env.S3_BUCKET }}
+          local_file: qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+          upload_location: qualcomm/qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+          region: ${{ steps.prod_region.outputs.region }}
+
+      # Quick sanity check that it landed where we expect (PROD)
+      - name: Verify object exists in PROD (qualcomm)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          aws s3 ls "s3://${{ env.S3_BUCKET }}/qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz" --region "${{ steps.prod_region.outputs.region }}"
+
+      # --- Rootfs image handling (uses aligned RB3GEN2_ROOTFS_KEY) ---
       - name: Verify RB3 Gen2 rootfs image exists in S3
         shell: bash
         run: |
@@ -97,16 +212,13 @@ jobs:
           aws s3api head-object \
             --bucket "${{ env.S3_BUCKET }}" \
             --key "${{ env.RB3GEN2_ROOTFS_KEY }}" \
-            >/dev/null 2>&1 || {
-              echo "ERROR: S3 key ${{ env.RB3GEN2_ROOTFS_KEY }} not found in bucket ${{ env.S3_BUCKET }}." >&2
-              exit 1
-            }
+            --region "${{ steps.prod_region.outputs.region }}"
 
       - name: Download RB3 Gen2 rootfs image
         shell: bash
         run: |
           set -euxo pipefail
-          aws s3 cp "s3://${{ env.S3_BUCKET }}/${{ env.RB3GEN2_ROOTFS_KEY }}" .
+          aws s3 cp "s3://${{ env.S3_BUCKET }}/${{ env.RB3GEN2_ROOTFS_KEY }}" . --region "${{ steps.prod_region.outputs.region }}"
           ls -lh "./qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz"
 
       # --- Normalize & record original tar top-level entries ---
@@ -129,7 +241,7 @@ jobs:
           fi
           echo "Original tar normalized top-level entries:"
           printf '%s\n' "${TOPLEVELS[@]}"
-          echo "TOPLEVELS=${TOPLEVELS[*]}" >> "$GITHUB_OUTPUT"
+          echo "TOPLEVELS=${TOPLEVELS[*]}" >> "$GITHUB_OUTPUT
 
       - name: Extract RB3 Gen2 rootfs image (non-destructive)
         shell: bash
@@ -364,7 +476,7 @@ jobs:
           s3_bucket: ${{ env.S3_BUCKET }}
           local_file: ${{ steps.make_file_list_all.outputs.file_list_all }}
           mode: multi-upload
-          upload_location: qualcomm-linux-stg/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}
+          upload_location: qualcomm/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}
 
   publish_summary:
     needs: [build]
@@ -379,5 +491,4 @@ jobs:
           echo "- Build script: ${{ inputs.build_script }}" >> $GITHUB_STEP_SUMMARY
           echo "- Build args: ${{ inputs.build_args }}" >> $GITHUB_STEP_SUMMARY
           echo "- Uploaded to S3 bucket: ${{ env.S3_BUCKET }}" >> $GITHUB_STEP_SUMMARY
-
-          echo "- Upload location: qualcomm-linux-stg/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Upload location: qualcomm/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_STEP_SUMMARY
