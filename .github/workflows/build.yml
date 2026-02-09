@@ -39,14 +39,14 @@ on:
         default: 'qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz'
 
 env:
-  RB3GEN2_ROOTFS_KEY: qualcomm-linux-stg/qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
-  S3_BUCKET: qli-stg-gen-qlnx-gh-artifacts
+  RB3GEN2_ROOTFS_KEY: qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
+  S3_BUCKET: qli-prd-sensors-gh-artifacts
 
 jobs:
   build:
     runs-on:
-      group: GHA-Gen-Qlnx-Stg-SelfHosted-RG
-      labels: [ self-hosted, gen-qlnx-stg-u2404-x64-md-od-ephem ]
+      group: GHA-Sensors-Prd-SelfHosted-RG
+      labels: [ self-hosted, sensors-prd-u2404-x64-large-od-ephem ]
     strategy:
       fail-fast: false
     outputs:
@@ -364,7 +364,7 @@ jobs:
           s3_bucket: ${{ env.S3_BUCKET }}
           local_file: ${{ steps.make_file_list_all.outputs.file_list_all }}
           mode: multi-upload
-          upload_location: qualcomm-linux-stg/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}
+          upload_location: qualcomm/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}
 
   publish_summary:
     needs: [build]
@@ -379,4 +379,4 @@ jobs:
           echo "- Build script: ${{ inputs.build_script }}" >> $GITHUB_STEP_SUMMARY
           echo "- Build args: ${{ inputs.build_args }}" >> $GITHUB_STEP_SUMMARY
           echo "- Uploaded to S3 bucket: ${{ env.S3_BUCKET }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Upload location: qualcomm-linux-stg/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Upload location: qualcomm/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_STEP_SUMMARY
