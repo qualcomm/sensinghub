@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   qcom-preflight-checks:
-    uses: qualcomm/qcom-reusable-workflows/.github/workflows/qcom-preflight-checks-reusable-workflow.yml@v1.1.4
+    uses: qualcomm/qcom-reusable-workflows/.github/workflows/qcom-preflight-checks-reusable-workflow.yml@v2
     with:
       # ✅ Preflight Checkers
       repolinter: true
@@ -21,5 +21,7 @@ jobs:
       copyright-license-detector: true
       pr-check-emails: true
       dependency-review: true
+      enable-commit-msg-check: false
+      enable-armor-checkers: false
     secrets:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
