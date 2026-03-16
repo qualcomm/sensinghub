@@ -7,3 +7,24 @@ branches:
         headers:
           - common/inc/*.h
           - session/1.0/inc/*.h
+          - utils/inc/*.h
+
+abi_checks:
+  - name: libsensinghubapi
+    path: usr/lib/libsensinghubapi.so
+    headers:
+      - common/inc/*.h
+      - session/1.0/inc/*.h
+
+  - name: libsensinghubsession
+    path: usr/lib/libsensinghubsession.so
+    headers:
+      - common/inc/*.h
+      - session/1.0/inc/*.h
+
+  - name: libqshUtil
+    path: usr/lib/libqshUtil.so
+    headers:
+      - common/inc/*.h
+      - session/1.0/inc/*.h
+      - utils/inc/*.h

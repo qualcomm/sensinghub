@@ -21,5 +21,12 @@ jobs:
       copyright-license-detector: true
       pr-check-emails: true
       dependency-review: true
-    secrets:
-      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+      enable-armor-checkers: true
+      armor-checker-options:
+        {
+          "build-script": "ci/build.sh",
+          "runs-on": {
+            "group": "GHA-LeCore-Prd-SelfHosted-RG",
+            "labels": ["self-hosted", "lecore-prd-u2404-arm64-xlrg-od-ephem"]
+          }
+        }
