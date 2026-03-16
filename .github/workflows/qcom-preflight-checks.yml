@@ -22,11 +22,5 @@ jobs:
       pr-check-emails: true
       dependency-review: true
       enable-armor-checkers: true
-      armor-checker-options:
-        build-script: ./build.sh
-        runs-on:
-          group: QHA-Core-Prd-SelfHosted-RG
-          labels:
-            - self-hosted
-            - license-prd-us4408-amd64-xlarge-ubuntu
+      armor-checker-options: '{"build-script":"./build.sh","runs-on":{"group":"QHA-Core-Prd-SelfHosted-RG","labels":["self-hosted","license-prd-us4408-amd64-xlarge-ubuntu"]}}'
 
