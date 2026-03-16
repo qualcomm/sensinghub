@@ -23,10 +23,10 @@ jobs:
       dependency-review: true
       enable-armor-checkers: true
       armor-checker-options:
-        {
-          "build-script": "ci/build.sh",
-          "runs-on": {
-            "group": "GHA-LeCore-Prd-SelfHosted-RG",
-            "labels": ["self-hosted", "lecore-prd-u2404-arm64-xlrg-od-ephem"]
-          }
-        }
+        build-script: ./build.sh
+        runs-on:
+          group: QHA-Core-Prd-SelfHosted-RG
+          labels:
+            - self-hosted
+            - license-prd-us4408-amd64-xlarge-ubuntu
+
