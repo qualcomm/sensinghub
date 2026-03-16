@@ -5,7 +5,7 @@ echo "Running SensingHub build script..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Load default build args if not provided.
+# Load default build args if not provided
 if [ -z "${BUILD_ARGS:-}" ]; then
   source "${SCRIPT_DIR}/build_args.sh"
 fi
