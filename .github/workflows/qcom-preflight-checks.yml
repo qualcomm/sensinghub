@@ -16,11 +16,6 @@ jobs:
     uses: qualcomm/qcom-reusable-workflows/.github/workflows/qcom-preflight-checks-reusable-workflow.yml@v1.1.4
     with:
       # ✅ Preflight Checkers
-      repolinter: true
-      semgrep: true
-      copyright-license-detector: true
-      pr-check-emails: true
-      dependency-review: true
       enable-repolinter-check: true          # default: true
       enable-semgrep-scan: true              # default: true
       enable-copyright-license-check: true   # default: true
