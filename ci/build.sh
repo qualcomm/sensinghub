@@ -24,7 +24,9 @@ sudo apt-get install -y --no-install-recommends \
   gcc \
   g++ \
   libprotobuf-dev \
-  protobuf-compiler
+  protobuf-compiler \
+  libglib2.0-dev
+
 
 WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
 cd "${WORKSPACE}"
