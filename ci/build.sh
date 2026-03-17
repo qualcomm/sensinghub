@@ -12,6 +12,18 @@ fi
 
 echo "BUILD_ARGS=${BUILD_ARGS}"
 
+sudo apt-get clean
+sudo apt-get update -y
+
+sudo apt-get install -y --no-install-recommends \
+  autoconf \
+  automake \
+  libtool \
+  pkg-config \
+  make \
+  gcc \
+  g++
+
 WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
 cd "${WORKSPACE}"
 
