@@ -39,4 +39,7 @@ autoreconf -fi
 make -j"$(nproc)"
 make DESTDIR="${WORKSPACE}/build" install
 
+export CFLAGS="-g -Og -fno-eliminate-unused-debug-types"
+export CXXFLAGS="-g -Og -fno-eliminate-unused-debug-types"
+
 echo "Build completed successfully."
