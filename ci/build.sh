@@ -22,10 +22,9 @@ sudo apt-get install -y --no-install-recommends \
   pkg-config \
   make \
   gcc \
-  g++ \  
+  g++ \
   libprotobuf-dev \
   protobuf-compiler
-
 
 WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
 cd "${WORKSPACE}"
