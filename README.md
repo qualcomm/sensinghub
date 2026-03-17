@@ -8,4 +8,4 @@ Thanks for your interest in contributing to Qualcomm Sensing Hub! Please read ou
 
 ## License
 
-Qualcomm Sensing Hub is licensed under the BSD 3-clause "New" or "Revised" License. Check out the [LICENSE](LICENSE.txt) for more details.
+Qualcomm Sensing Hub is licensed under the BSD 3-clause "New" or "Revised" License. Check out the [LICENSE](LICENSE.txt) for more details
