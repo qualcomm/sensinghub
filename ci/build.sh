@@ -37,6 +37,6 @@ mkdir -p build
 autoreconf -fi
 ./configure ${BUILD_ARGS}
 make -j"$(nproc)"
-make DESTDIR="${WORKSPACE}" install
+make DESTDIR="${WORKSPACE}/build" install
 
 echo "Build completed successfully."
