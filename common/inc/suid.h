@@ -12,6 +12,7 @@ namespace sensinghub {
 /*
  * @brief Struct to represent sensor's unique ID (128-bit)
  */
+ 
 struct suid
 {
   suid() : low(0), high(0) {}
@@ -30,4 +31,3 @@ struct suid
 }  // namespace sensinghub
 }  // namespace quic
 }  // namespace com
-

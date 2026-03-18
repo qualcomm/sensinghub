@@ -10,18 +10,12 @@ branches:
           - utils/inc/*.h
 
 abi_checks:
-  - path: usr/lib/libsensinghubapi.so
-    headers:
-      - common/inc/*.h
-      - session/1.0/inc/*.h
-
-  - path: usr/lib/libsensinghubsession.so
-    headers:
-      - common/inc/*.h
-      - session/1.0/inc/*.h
-
-  - path: usr/lib/libqshUtil.so
-    headers:
+  - path: usr/lib
+    include_globs:
+      - libsensinghubapi.so
+      - libsensinghubsession.so
+      - libqshUtil.so
+    public_headers:
       - common/inc/*.h
       - session/1.0/inc/*.h
       - utils/inc/*.h
