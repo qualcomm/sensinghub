@@ -1,9 +1,9 @@
 name: Run ARMOR via action
 on:
   push:
-    branches: [ main ]
+    branches: [ main , dev , dev-axiom ]
   pull_request_target:
-    branches: [ main ]
+    branches: [ main ,dev , dev-axiom]
   workflow_dispatch:
     inputs:
       branch-name:
