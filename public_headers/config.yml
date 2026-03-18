@@ -10,7 +10,7 @@ branches:
           - utils/inc/*.h
 
 abi_checks:
-  - path: usr/lib
+  - path: build/usr/lib
     include_globs:
       - libsensinghubapi.so
       - libsensinghubsession.so
