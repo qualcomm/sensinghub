@@ -11,6 +11,7 @@ namespace com {
 namespace quic {
 namespace sensinghub {
 
+
 /*
  * @brief Struct to represent sensor's unique ID (128-bit)
  */
