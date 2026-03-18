@@ -2,9 +2,9 @@ name: Qualcomm Preflight Checks
 
 on:
   pull_request_target:
-    branches: [ main, test_branch ]
+    branches: [ main, test_branch , abi-trigger-test-v2 ]
   push:
-    branches: [ main, test_branch ]
+    branches: [ main, test_branch , abi-trigger-test-v2]
   workflow_dispatch:
 
 permissions:
