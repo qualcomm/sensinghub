@@ -7,3 +7,11 @@ branches:
         headers:
           - common/inc/*.h
           - session/1.0/inc/*.h
+          - utils/inc/*.h
+
+abi_checks:
+  - path: build/usr/lib
+    include_globs:
+      - libsensinghubapi.so
+      - libsensinghubsession.so
+      - libqshUtil.so
