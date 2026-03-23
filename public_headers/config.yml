@@ -15,7 +15,3 @@ abi_checks:
       - libsensinghubapi.so
       - libsensinghubsession.so
       - libqshUtil.so
-    public_headers:
-      - common/inc/*.h
-      - session/1.0/inc/*.h
-      - utils/inc/*.h
