@@ -5,6 +5,14 @@
 
 set -euxo pipefail
 
+# CI diagnostic - verify runner environment
+echo "=== RUNNER DIAGNOSTIC ==="
+date
+hostname
+whoami
+id
+echo "=== END DIAGNOSTIC ==="
+
 echo "Running SensingHub build script..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
