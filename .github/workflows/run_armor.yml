@@ -2,7 +2,7 @@ name: Run ARMOR via action
 on:
   push:
     branches: [ main ]
-  pull_request_target:
+  pull_request:
     branches: [ main ]
   workflow_dispatch:
     inputs:
