@@ -80,6 +80,19 @@ GLIB_LIBS="$GLIB_LIBS"
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
+# ---- nanopb (runtime + protoc plugin) ----
+# In Yocto, nanopb-generator-native should provide protoc-gen-nanopb.
+AC_PATH_PROG([NANOPB_PLUGIN], [protoc-gen-nanopb])
+AS_IF([test "x${NANOPB_PLUGIN}" = "x"],
+      [AC_MSG_ERROR([nanopb plugin "protoc-gen-nanopb" not found in PATH. Install nanopb-generator-native (Yocto) or ensure it is available.])])
+AC_SUBST([NANOPB_PLUGIN])
+
+# Runtime library: try pkg-config first, else fall back to Yocto's libprotobuf-nanopb
+PKG_CHECK_MODULES([NANOPB], [nanopb],
+  [NANOPB_LIBS="$NANOPB_LIBS"],
+  [NANOPB_LIBS="-lprotobuf-nanopb"])
+AC_SUBST([NANOPB_LIBS])
+
 AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 m4_define([LT_MAJOR], [1])
 m4_define([LT_MINOR], [0])
@@ -94,6 +107,7 @@ AC_CONFIG_FILES([             \
         session/1.0/Makefile  \
         examples/SessionClient/Makefile \
         utils/Makefile \
+		sessionlogger/Makefile  \
         sensing-hub.pc
                ])
 AC_OUTPUT

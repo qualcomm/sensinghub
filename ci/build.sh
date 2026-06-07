@@ -27,6 +27,7 @@ sudo apt-get install -y --no-install-recommends \
   make \
   gcc \
   g++ \
+  nanopb \
   libprotobuf-dev \
   protobuf-compiler \
   libglib2.0-dev

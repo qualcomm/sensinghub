@@ -11,6 +11,7 @@
 #include <condition_variable>
 #include "ISession.h"
 #include "SessionFactory.h"
+#include "qshPb.h"
 
 using suid = com::quic::sensinghub::suid;
 

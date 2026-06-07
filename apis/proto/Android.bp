@@ -1,4 +1,38 @@
 cc_library_shared {
+    name: "libsensinghubapi-c",
+    rtti: false,
+    cflags: [
+        "-Werror",
+        "-Wall",
+        "-Wno-unused-parameter",
+        "-fexceptions",
+        "-DPB_FIELD_32BIT",
+        "-include google/protobuf/descriptor.pb.h",
+    ],
+    sanitize: {
+        integer_overflow: true,
+    },
+    shared_libs: [
+        "libcutils",
+        "libutils",
+    ],
+    static_libs: [
+        "libprotobuf-c-nano-32bit",
+    ],
+    generated_sources: [
+        "generate_nanopb_sources",
+    ],
+    generated_headers: [
+        "generate_nanopb_headers",
+    ],
+    export_generated_headers: [
+        "generate_nanopb_headers",
+    ],
+    owner: "qti",
+    vendor: true,
+}
+
+cc_library_shared {
     name: "libsensinghubapi",
     rtti: false,
     srcs: [
@@ -72,6 +106,218 @@ cc_defaults {
     proto: {
         include_dirs: ["vendor/qcom/opensource/sensing-hub/apis/proto"],
     },
+}
+
+filegroup {
+    name: "sensing_hub_proto_sources",
+    srcs: [
+        "google/protobuf/descriptor.proto",
+        "nanopb.proto",
+        "sns_std_sensor.proto",
+        "sns_sar.proto",
+        "sns_std_event_gated_sensor.proto",
+        "sns_hall.proto",
+        "sns_cal.proto",
+        "sns_ambient_temperature.proto",
+        "sns_ambient_light.proto",
+        "sns_gyro.proto",
+        "sns_proximity.proto",
+        "sns_accel.proto",
+        "sns_sensor_temperature.proto",
+        "sns_mag.proto",
+        "sns_pressure.proto",
+        "sns_std_type.proto",
+        "sns_std.proto",
+        "sns_suid.proto",
+        "sns_client.proto",
+        "sns_humidity.proto",
+        "sns_direct_channel.proto",
+        "sns_physical_sensor_test.proto",
+        "sns_device_mode.proto",
+        "sns_amd.proto",
+        "sns_device_orient.proto",
+        "sns_game_rv.proto",
+        "sns_geomag_rv.proto",
+        "sns_gravity.proto",
+        "sns_gyro_cal.proto",
+        "sns_hinge_angle.proto",
+        "sns_mag_cal.proto",
+        "sns_pedometer.proto",
+        "sns_persist_motion_detect.proto",
+        "sns_persist_stationary_detect.proto",
+        "sns_rotv.proto",
+        "sns_sig_motion.proto",
+        "sns_tilt.proto",
+        "sns_transport_ppe.proto"
+    ],
+}
+
+genrule_defaults {
+    name: "libsensinghubapi-c_defaults",
+    srcs: [
+        "google/protobuf/descriptor.proto",
+        "nanopb.proto",
+        "sns_std_sensor.proto",
+        "sns_sar.proto",
+        "sns_std_event_gated_sensor.proto",
+        "sns_hall.proto",
+        "sns_cal.proto",
+        "sns_ambient_temperature.proto",
+        "sns_ambient_light.proto",
+        "sns_gyro.proto",
+        "sns_proximity.proto",
+        "sns_accel.proto",
+        "sns_sensor_temperature.proto",
+        "sns_mag.proto",
+        "sns_pressure.proto",
+        "sns_std_type.proto",
+        "sns_std.proto",
+        "sns_suid.proto",
+        "sns_client.proto",
+        "sns_humidity.proto",
+        "sns_direct_channel.proto",
+        "sns_physical_sensor_test.proto",
+        "sns_device_mode.proto",
+        "sns_amd.proto",
+        "sns_device_orient.proto",
+        "sns_game_rv.proto",
+        "sns_geomag_rv.proto",
+        "sns_gravity.proto",
+        "sns_gyro_cal.proto",
+        "sns_hinge_angle.proto",
+        "sns_mag_cal.proto",
+        "sns_pedometer.proto",
+        "sns_persist_motion_detect.proto",
+        "sns_persist_stationary_detect.proto",
+        "sns_rotv.proto",
+        "sns_sig_motion.proto",
+        "sns_tilt.proto",
+        "sns_transport_ppe.proto"
+    ],
+    tools: [
+        "aprotoc",
+        "protoc-gen-nanopb",
+        "pw_protobuf_compiler_py",
+    ],
+    cmd: "in_files=($(in)); " +
+         "proto_files=(); " +
+         "proto_path_args=\"--proto-path=vendor/qcom/opensource/sensing-hub/apis/proto \"; " +
+         "for f in \"$${in_files[@]}\"; do " +
+         "proto_files+=(\"$${f}\"); " +
+         "done; " +
+         "mkdir -p $(genDir)/google/protobuf; " +
+         "python3 $(location pw_protobuf_compiler_py) " +
+         "--plugin-path=$(location protoc-gen-nanopb) " +
+         "$${proto_path_args} " +
+         "--out-dir=$(genDir) " +
+         "--compile-dir=$(genDir) " +
+         "--language nanopb " +
+         "--sources $${proto_files[@]} " +
+         "--no-experimental-proto3-optional " +
+         "--no-experimental-editions " +
+         "--pwpb-no-oneof-callbacks " +
+         "--protoc=$(location aprotoc)",
+}
+
+genrule {
+    name: "generate_nanopb_headers",
+    defaults: [
+        "libsensinghubapi-c_defaults",
+    ],
+    out: [
+        "google/protobuf/descriptor.pb.h",
+        "nanopb.pb.h",
+        "sns_std_sensor.pb.h",
+        "sns_sar.pb.h",
+        "sns_std_event_gated_sensor.pb.h",
+        "sns_hall.pb.h",
+        "sns_cal.pb.h",
+        "sns_ambient_temperature.pb.h",
+        "sns_ambient_light.pb.h",
+        "sns_gyro.pb.h",
+        "sns_proximity.pb.h",
+        "sns_accel.pb.h",
+        "sns_sensor_temperature.pb.h",
+        "sns_mag.pb.h",
+        "sns_pressure.pb.h",
+        "sns_std_type.pb.h",
+        "sns_std.pb.h",
+        "sns_suid.pb.h",
+        "sns_client.pb.h",
+        "sns_humidity.pb.h",
+        "sns_direct_channel.pb.h",
+        "sns_physical_sensor_test.pb.h",
+        "sns_device_mode.pb.h",
+        "sns_amd.pb.h",
+        "sns_device_orient.pb.h",
+        "sns_game_rv.pb.h",
+        "sns_geomag_rv.pb.h",
+        "sns_gravity.pb.h",
+        "sns_gyro_cal.pb.h",
+        "sns_hinge_angle.pb.h",
+        "sns_mag_cal.pb.h",
+        "sns_pedometer.pb.h",
+        "sns_persist_motion_detect.pb.h",
+        "sns_persist_stationary_detect.pb.h",
+        "sns_rotv.pb.h",
+        "sns_sig_motion.pb.h",
+        "sns_tilt.pb.h",
+        "sns_transport_ppe.pb.h",
+    ],
+    export_include_dirs: [
+        "google/protobuf",
+        ".",
+    ],
+}
+
+genrule {
+    name: "generate_nanopb_sources",
+    defaults: [
+        "libsensinghubapi-c_defaults",
+    ],
+    out: [
+        "google/protobuf/descriptor.pb.c",
+        "nanopb.pb.c",
+        "sns_std_sensor.pb.c",
+        "sns_sar.pb.c",
+        "sns_std_event_gated_sensor.pb.c",
+        "sns_hall.pb.c",
+        "sns_cal.pb.c",
+        "sns_ambient_temperature.pb.c",
+        "sns_ambient_light.pb.c",
+        "sns_gyro.pb.c",
+        "sns_proximity.pb.c",
+        "sns_accel.pb.c",
+        "sns_sensor_temperature.pb.c",
+        "sns_mag.pb.c",
+        "sns_pressure.pb.c",
+        "sns_std_type.pb.c",
+        "sns_std.pb.c",
+        "sns_suid.pb.c",
+        "sns_client.pb.c",
+        "sns_humidity.pb.c",
+        "sns_direct_channel.pb.c",
+        "sns_physical_sensor_test.pb.c",
+        "sns_device_mode.pb.c",
+        "sns_amd.pb.c",
+        "sns_device_orient.pb.c",
+        "sns_game_rv.pb.c",
+        "sns_geomag_rv.pb.c",
+        "sns_gravity.pb.c",
+        "sns_gyro_cal.pb.c",
+        "sns_hinge_angle.pb.c",
+        "sns_mag_cal.pb.c",
+        "sns_pedometer.pb.c",
+        "sns_persist_motion_detect.pb.c",
+        "sns_persist_stationary_detect.pb.c",
+        "sns_rotv.pb.c",
+        "sns_sig_motion.pb.c",
+        "sns_tilt.pb.c",
+        "sns_transport_ppe.pb.c",
+    ],
+    export_include_dirs: [
+        "google/protobuf"
+    ],
 }
 
 prebuilt_etc {

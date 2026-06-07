@@ -41,6 +41,7 @@ vector<int> sessionFactory::getSensingHubIds() {
     for(int loop_idx = 0; loop_idx < supportedHubIdsPtr->size(); loop_idx++) {
     supportedHubIds.push_back((*supportedHubIdsPtr)[loop_idx]);
     }
+    delete supportedHubIdsPtr;
   }
   return supportedHubIds;
 }

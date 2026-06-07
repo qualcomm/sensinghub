@@ -47,15 +47,26 @@ public:
     }
 
     /**
-     * @brief terminates the worker thread, waits until all
-     *        outstanding tasks are finished.
+     * @brief terminates the worker thread, after shutting it down
      *
      * @note this destructor should never be called from the worker
      *       thread itself.
      */
     ~qshWorker()
     {
+        shutdownWorker();
+    }
+
+    /**
+     * @brief Signals the worker thread to stop processing tasks,
+     *        waits until the thread completes execution.
+     */
+    void shutdownWorker(){
         std::unique_lock<std::mutex> lk(mMutex);
+        if(!mAlive){
+            lk.unlock();
+            return;
+        }
         mAlive = false;
         mConditionVar.notify_one();
         lk.unlock();
@@ -79,6 +90,10 @@ public:
     void addTask(const workerTask& task)
     {
         std::lock_guard<std::mutex> lk(mMutex);
+        //no task should be enqueued if shutdown has already begun
+        if(!mAlive)
+            return;
+
         try {
             mTaskQueue.push(task);
         } catch (std::exception& e) {
