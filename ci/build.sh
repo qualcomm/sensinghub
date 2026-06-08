@@ -27,8 +27,6 @@ sudo apt-get install -y --no-install-recommends \
   make \
   gcc \
   g++ \
-  nanopb \
-  python3-protobuf \
   libprotobuf-dev \
   protobuf-compiler \
   libglib2.0-dev
@@ -41,9 +39,6 @@ rm -rf build || true
 mkdir -p build
 
 autoreconf -fi
-
-export CPPFLAGS="-I/usr/include ${CPPFLAGS:-}"
-
 ./configure ${BUILD_ARGS}
 make -j"$(nproc)"
 make DESTDIR="${WORKSPACE}/build" install
