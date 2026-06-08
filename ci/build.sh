@@ -41,6 +41,9 @@ rm -rf build || true
 mkdir -p build
 
 autoreconf -fi
+
+export CPPFLAGS="-I/usr/include ${CPPFLAGS:-}"
+
 ./configure ${BUILD_ARGS}
 make -j"$(nproc)"
 make DESTDIR="${WORKSPACE}/build" install
