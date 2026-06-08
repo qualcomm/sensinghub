@@ -28,6 +28,7 @@ sudo apt-get install -y --no-install-recommends \
   gcc \
   g++ \
   nanopb \
+  python3-protobuf \
   libprotobuf-dev \
   protobuf-compiler \
   libglib2.0-dev
