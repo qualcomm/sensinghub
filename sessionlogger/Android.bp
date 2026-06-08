@@ -1,15 +1,14 @@
 cc_library_shared {
-    name: "libqshUtil",
+    name: "libsensinghublogger",
     owner: "qti",
     vendor: true,
+    rtti: false,
     srcs: [
-        "src/qshLog.cpp",
-        "src/qshWakelock.cpp",
-        "src/qshSSR.cpp",
-        "src/qshJsonParser.cpp",
-        "src/suidLookUp.cpp",
-        "src/qshPb.cpp",
+        "src/LoggerFactory.cpp",
+        "src/SensorsDiagLogger.cpp",
     ],
+    local_include_dirs: ["inc"],
+    export_include_dirs: ["inc"],
     header_libs: [
         "libsensinghubcommon_headers",
     ],
@@ -18,21 +17,24 @@ cc_library_shared {
         "-Wall",
         "-Wno-unused-parameter",
         "-fexceptions",
-        "-DUSE_ANDROID_LOG",
     ],
-    sanitize:{
-        integer_overflow: true,
-    },
-    local_include_dirs: ["./inc"],
-    export_include_dirs: ["./inc"],
     shared_libs: [
+        "liblog",
         "libutils",
         "libcutils",
-        "liblog",
+        "libqshUtil",
         "libsensinghubsession",
         "libsensinghubapi-c",
+        "libdl",
     ],
     static_libs: [
         "libprotobuf-c-nano-32bit",
     ],
+}
+
+cc_library_headers {
+    name: "libsensinghublogger_headers",
+    export_include_dirs: ["inc"],
+    owner: "qti",
+    vendor: true,
 }

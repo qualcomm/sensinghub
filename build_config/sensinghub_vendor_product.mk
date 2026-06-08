@@ -1,6 +1,8 @@
 SENSING_HUB_PRODUCTS := libsensinghubapi
+SENSING_HUB_PRODUCTS += libsensinghubapi-c
 SENSING_HUB_PRODUCTS += libsensinghubsession
 SENSING_HUB_PRODUCTS += libqshUtil
+SENSING_HUB_PRODUCTS += libsensinghublogger
 
 SNS_VENDOR_PRODUCTS_DBG := descriptor.proto
 SNS_VENDOR_PRODUCTS_DBG += nanopb.proto

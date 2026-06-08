@@ -1,17 +1,18 @@
 # Makefile.am - Automake script for SessionClient
 
-AM_CPPFLAGS = -Werror                           \
-              -Wall                             \
+AM_CPPFLAGS = -Wall                             \
               -fexceptions                      \
               -I$(top_srcdir)/common/inc/             \
               -I$(top_srcdir)/session/1.0/inc/        \
-              -I$(top_srcdir)/apis/proto/
+              -I$(top_builddir)/apis/proto/nanopb_gen \
+              -I$(top_srcdir)/apis/proto/nanopb_gen
 
 cpp_sources = SessionClient.cpp
 
 requiredlibs = ../../session/1.0/libsensinghubsession.la \
-               ../../apis/proto/libsensinghubapi.la \
-               @PROTOBUF_LIBS@
+               ../../apis/proto/libsensinghubapi-c.la \
+               ../../utils/libqshUtil.la
+
 
 bin_PROGRAMS = SessionClient
 SessionClient_SOURCES = $(cpp_sources)

@@ -29,7 +29,7 @@ qsh_cc_defaults {
                     "qshApiDirPath",
                 ],
                 shared_libs: [
-                    "libsensinghubapi",
+                    "libsensinghubapi-c",
                     "libsensinghubsession",
                 ],
                 header_libs: [

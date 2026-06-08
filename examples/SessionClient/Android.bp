@@ -8,9 +8,12 @@ cc_binary {
         "libsensinghubcommon_headers",
     ],
     shared_libs: [
-        "libsensinghubapi",
+        "libsensinghubapi-c",
+        "libqshUtil",
         "libsensinghubsession",
-        "libprotobuf-cpp-lite"
+    ],
+    static_libs: [
+        "libprotobuf-c-nano-32bit",
     ],
     owner: "qti",
     vendor: true,

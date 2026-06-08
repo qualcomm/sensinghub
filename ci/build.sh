@@ -29,8 +29,19 @@ sudo apt-get install -y --no-install-recommends \
   g++ \
   libprotobuf-dev \
   protobuf-compiler \
-  libglib2.0-dev
+  libglib2.0-dev \
+  python3 \
+  python3-pip
 
+# Install nanopb generator
+python3 -m pip install --user nanopb
+
+# Ensure protoc-gen-nanopb is in PATH
+export PATH="$HOME/.local/bin:$PATH"
+
+# Debug
+which protoc
+which protoc-gen-nanopb
 
 WORKSPACE="${GITHUB_WORKSPACE:-$(pwd)}"
 cd "${WORKSPACE}"

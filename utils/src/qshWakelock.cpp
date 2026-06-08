@@ -16,9 +16,9 @@ qshWakelock* qshWakelock::mSelf= nullptr;
 
 qshWakelock* qshWakelock::getInstance(const char* lockName)
 {
-  sns_logi("qshWakelock::getInstance");
+  sns_logd("qshWakelock::getInstance");
   if(nullptr != mSelf) {
-    sns_logi("return an exsiting lock: %s", mSelf->mQshWakelockName.c_str());
+    sns_logd("return an exsiting lock: %s", mSelf->mQshWakelockName.c_str());
     return mSelf;
   } else {
     if (nullptr == lockName) {
@@ -77,7 +77,7 @@ qshWakelock::~qshWakelock()
 int32_t qshWakelock::acquire(unsigned int inCount)
 {
   int32_t ret = -1;
-  sns_logi("qshWakelock::acquire %d", inCount);
+  sns_logd("qshWakelock::acquire %d", inCount);
   std::lock_guard<std::mutex> lock(mMutex);
   if (inCount > std::numeric_limits<unsigned int>::max() - mAcqCount) {
     sns_loge("_in_count %d will overflow max of mAcqCount %u", inCount, mAcqCount);
@@ -91,14 +91,14 @@ int32_t qshWakelock::acquire(unsigned int inCount)
     }
   }
   mAcqCount = mAcqCount + inCount;
-  sns_logi("number of acquired wakelock %d", mAcqCount);
+  sns_logd("number of acquired wakelock %d", mAcqCount);
   return ret;
 }
 
 int32_t qshWakelock::release(unsigned int inCount)
 {
   int32_t ret = -1;
-  sns_logi("qshWakelock::release %d", inCount);
+  sns_logd("qshWakelock::release %d", inCount);
   std::lock_guard<std::mutex> lock(mMutex);
   if (inCount > mAcqCount) {
       sns_loge("_in_count %d is larger than mAcqCount %u", inCount, mAcqCount);
@@ -111,7 +111,7 @@ int32_t qshWakelock::release(unsigned int inCount)
       sns_loge("fail to release wakelock");
     }
   } else {
-    sns_logi("number of remaining wakelock %d", mAcqCount);
+    sns_logd("number of remaining wakelock %d", mAcqCount);
   }
   return ret;
 }

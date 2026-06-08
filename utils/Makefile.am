@@ -1,12 +1,12 @@
-AM_CPPFLAGS = -Werror                   \
+AM_CPPFLAGS = \
               -Wall                     \
               -Wno-unused-parameter     \
-              -Wno-unused-variable     \
+              -Wno-unused-variable      \
               -Wno-unused-result        \
               -Wno-sign-compare        \
               -fexceptions              \
-              -I$(srcdir)/inc   \
-              -I$(top_srcdir)/apis/proto  \
+              -I$(srcdir)/inc          \
+              -I$(top_srcdir)/apis/proto/nanopb_gen \
               -I$(top_srcdir)/session/1.0/inc \
               -I$(top_srcdir)/common/inc  \
               -DUSE_SYS_LOG               \
@@ -16,19 +16,22 @@ cpp_sources_qshutils = ./src/qshLog.cpp \
                        ./src/qshWakelock.cpp \
                        ./src/suidLookUp.cpp  \
                        ./src/qshSSR.cpp      \
-                       ./src/qshJsonParser.cpp
+                       ./src/qshJsonParser.cpp \
+                       ./src/qshPb.cpp
 
 include_HEADERS = $(srcdir)/inc/qshJsonParser.h \
                   $(srcdir)/inc/qshLog.h        \
+                  $(srcdir)/inc/qshPb.h         \
                   $(srcdir)/inc/qshSSR.h        \
                   $(srcdir)/inc/qshTarget.h     \
                   $(srcdir)/inc/qshTimeUtil.h   \
                   $(srcdir)/inc/qshTrace.h      \
                   $(srcdir)/inc/qshWakelock.h   \
                   $(srcdir)/inc/qshWorker.h     \
-                  $(srcdir)/inc/suidLookUp.h
+                  $(srcdir)/inc/suidLookUp.h    \
+                  $(srcdir)/inc/qshPbSensorUtils.h
 
-requiredlibs = $(top_builddir)/apis/proto/libsensinghubapi.la  \
+requiredlibs = $(top_builddir)/apis/proto/libsensinghubapi-c.la \
                $(top_builddir)/session/1.0/libsensinghubsession.la
 
 lib_LTLIBRARIES = libqshUtil.la
