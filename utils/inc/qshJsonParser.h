@@ -25,18 +25,30 @@ public:
   }
 
   /* reads sensing_hub_config file & starts parsing */
-  int loadFile();
+  int loadFile(const char* path);
   /* returns list of supported hub ids */
   std::vector<int> getHubIdList();
   /* gets the hub id for a given hub name */
   int getHubId(std::string hubName);
   /* fetches the comm attributes for a hub id */
   int getCommHandleAttrs(int hubID);
+  /* fetches the comm type for a hub id */
+  int getCommType(int hubID);
+  /* fetches the hub name for a hub id */
+  std::string getHubName(int hubID);
+  /* returns if parser state has been updated from config file */
+  bool isFileParsed();
 
 private:
+  int mDeviceSocId;
+  std::vector<int> mJsonSocIdList;
+  int mJsonSocId;
+  int readSocId();
+  void resetParserState();
 
   std::unordered_map<std::string, int> mSensingHubNameIdMap;
   std::unordered_map<int, std::pair<std::string, int>> mSensingHubCommMap;
+  std::unordered_map<int, std::string> mSensingHubIdNameMap;
   int mCurrLineNum;
   std::vector<int> mHubIds;
 
@@ -50,7 +62,7 @@ private:
 
   bool mSensingHubNameIdMapFilled;
   bool mCommMapFilled;
-  bool mIsFileLoaded;
+  bool mIsFileParsed;
 
   int getWhitespaceLen(char const* str, uint32_t strLen);
 
@@ -66,5 +78,6 @@ private:
 
   int32_t parseConfig(char* json, uint32_t jsonLen);
 
+  int parseConfigItem(char* json, uint32_t jsonLen);
   int parseFile(char* json, uint32_t jsonLen);
 };
