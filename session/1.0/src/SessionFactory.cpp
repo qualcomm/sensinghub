@@ -30,6 +30,10 @@ ISession* sessionFactory::getSession(int hub_id) {
   }
 }
 
+ISession* sessionFactory::getSession() {
+	return getSession(-1);
+}
+
 vector<int> sessionFactory::getSensingHubIds() {
   vector<int> supportedHubIds;
   int status = 0;

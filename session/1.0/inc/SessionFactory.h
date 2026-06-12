@@ -95,7 +95,23 @@ public:
    *   - Nullptr                     Failure.
    *
    */
-  ISession* getSession(int hub_id = -1);
+  ISession* getSession(int hub_id);
+
+  /**
+   * @brief Creates an ISession instance using the default sensing-hub.
+   *
+   * This is a convenience overload of getSession(int hub_id) that
+   * requests a session for the default hub by internally using the
+   * implementation-defined default hub ID.
+   *
+   * @note The returned ISession instance is initially not in open state.
+   * The client must call open() before sending any requests.
+   *
+   * @return
+   *   - Pointer to ISession object  Success.
+   *   - Nullptr                     Failure.
+   */
+  ISession* getSession();
 
 
    /**
