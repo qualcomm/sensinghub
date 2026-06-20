@@ -177,7 +177,7 @@ namespace qshPb {
       attributes* attr_val = static_cast<attributes*>(*arg);
       attribute new_attr = {};
 
-      pb_buffer_arg data;
+      pb_buffer_arg data{};
       attr.str.funcs.decode = &decode_payload;
       attr.str.arg = &data;
       attr.subtype.values.funcs.decode = &decode_attribute_value_subtype;
@@ -187,9 +187,9 @@ namespace qshPb {
         return false;
       }
 
-      if (data.buf_len > 0) {
-        const char* str =  (char *)data.buf;
-        new_attr.str = std::string(str);
+
+      if (data.buf != nullptr && data.buf_len > 0) {
+        new_attr.str.assign(reinterpret_cast<const char*>(data.buf), data.buf_len);
         new_attr.has_str = true;
       } else if (attr.has_flt) {
         new_attr.flt = attr.flt;
@@ -225,7 +225,7 @@ namespace qshPb {
     {
       sns_client_event_msg_sns_client_event event =
           sns_client_event_msg_sns_client_event_init_default;
-      pb_buffer_arg data;
+      pb_buffer_arg data{};
       suid_list* ctx = static_cast<suid_list*>(*arg);
 
       event.payload.funcs.decode = &decode_payload;
@@ -245,7 +245,7 @@ namespace qshPb {
       pb_istream_t sub_stream = pb_istream_from_buffer(
           reinterpret_cast<const pb_byte_t*>(data.buf), data.buf_len);
       sns_suid_event suid_event = sns_suid_event_init_default;
-      pb_buffer_arg dt_data;
+      pb_buffer_arg dt_data{};
       std::vector<sns_std_suid> suid_vector;
 
       suid_event.suid.funcs.decode = &decode_suid;
@@ -299,8 +299,8 @@ namespace qshPb {
     {
       sns_client_event_msg_sns_client_event event =
           sns_client_event_msg_sns_client_event_init_default;
-      pb_buffer_arg data;
-      sensor_attributes* ctx = static_cast<sensor_attributes*>(*arg);
+      pb_buffer_arg data{};
+	  sensor_attributes* ctx = static_cast<sensor_attributes*>(*arg);
 
       event.payload.funcs.decode = &decode_payload;
       event.payload.arg = &data;
