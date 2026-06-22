@@ -14,6 +14,7 @@ using namespace com::quic::sensinghub::session::V1_0 ;
 #define SENSING_HUB_INTERFACE_LIB_NAME "libQshSession.so"
 #endif
 
+
 bool sessionFactory::mSymbolLoaded = false;
 sessionFactory::getSession_t sessionFactory::mGetSessionSymbol = nullptr;
 sessionFactory::getSensingHubIds_t sessionFactory::mGetSensingHubIdsSymbol = nullptr;
