@@ -242,7 +242,7 @@ bool getSuid() {
   ISession::eventCallBack suidEvent = [&](const uint8_t* data , size_t size, uint64_t timeStamp){
     printf("got suid event \n");
     sns_client_event_msg pb_event_msg = sns_client_event_msg_init_default;
-    pb_istream_t stream = pb_istream_from_buffer((const pb_byte_t *) data, static_cast<pb_size_t>(size));
+    pb_istream_t stream = pb_istream_from_buffer((const pb_byte_t *) data, static_cast<size_t>(size));
 
     std::vector<suid> suid_vector;
     std::string datatype;
@@ -514,7 +514,7 @@ bool getAttributes(){
   ISession::eventCallBack attributeEvent = [&](const uint8_t* data , size_t size, uint64_t timeStamp){
     printf("got attribute event \n");
     sns_client_event_msg pb_event_msg = sns_client_event_msg_init_default;
-    pb_istream_t stream = pb_istream_from_buffer((const pb_byte_t *) data, static_cast<pb_size_t>(size));
+    pb_istream_t stream = pb_istream_from_buffer((const pb_byte_t *) data, static_cast<size_t>(size));
 
     pb_event_msg.events.funcs.decode = &decode_attribute_event; // called for each event
     pb_event_msg.events.arg = NULL;
@@ -689,7 +689,7 @@ bool startStreaming(ISession* streamingSession){
   ISession::eventCallBack dataEvent = [&](const uint8_t* data , size_t size, uint64_t timeStamp){
     sns_client_event_msg pb_event_msg = sns_client_event_msg_init_default;
 
-    pb_istream_t stream = pb_istream_from_buffer((const pb_byte_t *) data, static_cast<pb_size_t>(size));
+    pb_istream_t stream = pb_istream_from_buffer((const pb_byte_t *) data, static_cast<size_t>(size));
     pb_event_msg.events.funcs.decode = &decode_client_event;
     pb_event_msg.events.arg = NULL;
     if (!pb_decode(&stream, sns_client_event_msg_fields, &pb_event_msg)){
