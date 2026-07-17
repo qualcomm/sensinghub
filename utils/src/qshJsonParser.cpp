@@ -10,6 +10,12 @@
 #include "qshJsonParser.h"
 #include "qshLog.h"
 
+
+#ifdef USE_GLIB
+#include <glib.h>
+#define strlcpy g_strlcpy
+#endif
+
 #define MAX_DATA_VALUE_LEN 15
 #define COMM_TYPE_QMI    "0"
 #define COMM_TYPE_GLINK  "1"
@@ -18,8 +24,6 @@
 using namespace std;
 
 qshJsonParser::qshJsonParser():
-  mDeviceSocId(-1),
-  mJsonSocId(-1),
   mReadCommAttr(false),
   mIsClientCommGrp(false),
   mSensingHubId(-1),
@@ -28,7 +32,9 @@ qshJsonParser::qshJsonParser():
   mClientCommValue(-1),
   mSensingHubNameIdMapFilled(false),
   mCommMapFilled(false),
-  mIsFileParsed(false)
+  mIsFileParsed(false),
+  mJsonSocId(-1),
+  mDeviceSocId(-1)
 {
   mDeviceSocId = readSocId();
   mJsonSocIdList.clear();

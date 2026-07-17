@@ -83,9 +83,18 @@ void sns_log_message(int level, const char *fmt, ...){
 
   if (sensors_log::config.level >= level) {
     static int log_level_map[5] = {LOG_WARNING, LOG_ERR, LOG_INFO, LOG_DEBUG, LOG_NOTICE};
-    vsyslog(log_level_map[level], fmt, args);
+
+    va_list syslog_args;
+    va_copy(syslog_args, args);
+    vsyslog(log_level_map[level], fmt, syslog_args);
+    va_end(syslog_args);
+
     if (sensors_log::config.stderr_logging == true) {
-      vfprintf(stderr, fmt, args);
+      va_list stderr_args;
+      va_copy(stderr_args, args);
+      vfprintf(stderr, fmt, stderr_args);
+      va_end(stderr_args);
+      fprintf(stderr, "\n");
     }
   }
   va_end(args);
