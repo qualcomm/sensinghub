@@ -19,7 +19,8 @@
 #define MAX_DATA_VALUE_LEN 15
 #define COMM_TYPE_QMI    "0"
 #define COMM_TYPE_GLINK  "1"
-#define COMM_TYPE_RPMSG  "2"
+#define COMM_TYPE_FASTRPC "2"
+#define COMM_TYPE_RPMSG   "3"
 
 using namespace std;
 

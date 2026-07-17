@@ -2,7 +2,8 @@ cc_library_shared {
     name: "libsensinghubsession",
     rtti: false,
     srcs: [
-        "src/SessionFactory.cpp"
+        "src/SessionFactory.cpp",
+        "src/SessionConfig.cpp"
     ],
     local_include_dirs: ["inc"],
     export_include_dirs: ["inc"],
