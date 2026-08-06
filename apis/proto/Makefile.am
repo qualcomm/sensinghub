@@ -3,6 +3,7 @@
 PROTOC ?= protoc
 NANOPB_PLUGIN ?= @NANOPB_PLUGIN@
 
+
 PROTOGEN_DIR = $(builddir)/proto_gen
 
 
