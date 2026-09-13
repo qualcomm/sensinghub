@@ -55,7 +55,6 @@
 
 syntax = "proto2";
 import "nanopb.proto";
-import "sns_std_sensor.proto";
 
 
 // @brief Message IDs for HINGE_ANGLE Sensor
