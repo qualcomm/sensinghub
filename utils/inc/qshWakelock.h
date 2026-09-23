@@ -22,7 +22,7 @@ const char * const PATHS[] = {
 };
 
 /*Singleton class which will interact with qshWakelock
- * to acuire / release the wakelock based on the number of
+ * to acquire / release the wakelock based on the number of
  * wakeup events processed from FMQ */
 class qshWakelock {
 public:

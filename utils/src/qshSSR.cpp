@@ -48,7 +48,7 @@ bool isCrashTrigerSupport()
 }
 
 /* utility function to trigger ssr*/
-/*  all deamons/system_app do not have permissions to open
+/*  all daemons/system_app do not have permissions to open
      sys/kernel/boot_slpi/ssr , right now only hal sensors can do it*/
 int triggerSSR() {
     if(isSSRTrigerSupport() == true) {
@@ -67,7 +67,7 @@ int triggerSSR() {
         }
         close(fd);
         if (ret == 0) {
-            /*allow atleast some time before connecting after ssr*/
+            /*allow at least some time before connecting after ssr*/
             sleep(2);
         }
         return ret;

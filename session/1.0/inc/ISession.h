@@ -50,12 +50,12 @@ public:
   enum error
   {
     RESET,        /*!< Indicates a reset of the Sensing Hub subsystem.
-                   * - No further events will be recieved on this session
+                   * - No further events will be received on this session
                    * - The session remains in open state
                    * - Client may resend the sensor requests to resume event reception
                    */
     SERVICE_DOWN  /*!< Indicates unavailability of the Sensing Hub subsystem.
-                   * - No further events will be recieved on this session
+                   * - No further events will be received on this session
                    * - The session remains in closed state
                    * - The Client is expected to call open() again to attempt reconnection
                    */
@@ -140,8 +140,8 @@ public:
    * @param [in] eventCB   eventCallBack pointer (may be nullptr).
    *
    * @note All parameters are mandatory.
-   * - Incase SUID is already registered, callbacks are updated with new ones.
-   * - The client may pass nullptr, incase any callback function is not defined / required.
+   * - In case SUID is already registered, callbacks are updated with new ones.
+   * - The client may pass nullptr, in case any callback function is not defined / required.
    * - For an already registered SUID, passing nullptr for all callbacks
    *   effectively unregisters that SUID.
    * - For a new/unregistered SUID, passing nullptr for all callback
