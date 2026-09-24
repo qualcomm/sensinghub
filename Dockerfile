@@ -65,6 +65,18 @@ RUN apt-get update && apt install -y apt-transport-https apt-utils fuseext2 \
 	libglib2.0-dev \
 	&& rm -rf -- /var/lib/apt/lists/*
 
+# Build and install QMI Framework (provides qmi_cci.h, qmi_idl_lib.h,
+# qmi_idl_lib_internal.h, common_v01.h, libqmi_common/libqencdec/libqcci/libqcsi
+# and qmi-framework.pc for pkg-config)
+RUN git clone --depth 1 --branch v0.1.4 https://github.com/qualcomm/qmi-framework.git /tmp/qmi-framework && \
+    cd /tmp/qmi-framework && \
+    autoreconf --install && \
+    ./configure --prefix=/usr && \
+    make -j"$(nproc)" && \
+    make install && \
+    ldconfig && \
+    cd / && rm -rf /tmp/qmi-framework
+
 # Install Python packages
 RUN pip install --no-cache-dir requests kas==4.7 --break-system-packages
 
