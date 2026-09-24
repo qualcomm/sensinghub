@@ -46,6 +46,7 @@ nodist_proto_SOURCES =  $(PROTOGEN_DIR)/google/protobuf/descriptor.pb.cc     \
                        $(PROTOGEN_DIR)/sns_ambient_temperature.pb.cc        \
                        $(PROTOGEN_DIR)/sns_amd.pb.cc                        \
                        $(PROTOGEN_DIR)/sns_client.pb.cc                     \
+                       $(PROTOGEN_DIR)/sns_client_glink.pb.cc               \
                        $(PROTOGEN_DIR)/sns_device_mode.pb.cc                \
                        $(PROTOGEN_DIR)/sns_device_orient.pb.cc              \
                        $(PROTOGEN_DIR)/sns_direct_channel.pb.cc             \
@@ -86,6 +87,7 @@ BUILT_SOURCES = $(PROTOGEN_DIR)/google/protobuf/descriptor.pb.h     \
                 $(PROTOGEN_DIR)/sns_ambient_temperature.pb.h        \
                 $(PROTOGEN_DIR)/sns_amd.pb.h                        \
                 $(PROTOGEN_DIR)/sns_client.pb.h                     \
+                $(PROTOGEN_DIR)/sns_client_glink.pb.h               \
                 $(PROTOGEN_DIR)/sns_device_mode.pb.h                \
                 $(PROTOGEN_DIR)/sns_device_orient.pb.h              \
                 $(PROTOGEN_DIR)/sns_direct_channel.pb.h             \
@@ -132,6 +134,7 @@ nanopb_include_HEADERS =  $(PROTOGEN_DIR)/nanopb.pb.h                         \
                          $(NANOPB_GEN_DIR)/sns_ambient_temperature.pb.h        \
                          $(NANOPB_GEN_DIR)/sns_amd.pb.h                        \
                          $(NANOPB_GEN_DIR)/sns_client.pb.h                     \
+                         $(NANOPB_GEN_DIR)/sns_client_glink.pb.h               \
                          $(NANOPB_GEN_DIR)/sns_device_mode.pb.h                \
                          $(NANOPB_GEN_DIR)/sns_device_orient.pb.h              \
                          $(NANOPB_GEN_DIR)/sns_direct_channel.pb.h             \
@@ -192,6 +195,7 @@ nodist_nanopb_SOURCES = \
                         $(NANOPB_GEN_DIR)/sns_ambient_temperature.pb.c        \
                         $(NANOPB_GEN_DIR)/sns_amd.pb.c                        \
                         $(NANOPB_GEN_DIR)/sns_client.pb.c                     \
+                        $(NANOPB_GEN_DIR)/sns_client_glink.pb.c               \
                         $(NANOPB_GEN_DIR)/sns_device_mode.pb.c                \
                         $(NANOPB_GEN_DIR)/sns_device_orient.pb.c              \
                         $(NANOPB_GEN_DIR)/sns_direct_channel.pb.c             \
