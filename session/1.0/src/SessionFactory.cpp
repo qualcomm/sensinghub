@@ -9,7 +9,7 @@
 using namespace std;
 using namespace com::quic::sensinghub::session::V1_0 ;
 #ifdef SNS_VERSIONED_LIB_ENABLED
-#define SENSING_HUB_INTERFACE_LIB_NAME "libQshSession.so.2"
+#define SENSING_HUB_INTERFACE_LIB_NAME "libQshSession.so.1"
 #else
 #define SENSING_HUB_INTERFACE_LIB_NAME "libQshSession.so"
 #endif
