@@ -17,6 +17,8 @@
 using namespace std;
 
 qshJsonParser::qshJsonParser():
+  mDeviceSocId(-1),
+  mJsonSocId(-1),
   mReadCommAttr(false),
   mIsClientCommGrp(false),
   mSensingHubId(-1),
@@ -25,9 +27,7 @@ qshJsonParser::qshJsonParser():
   mClientCommValue(-1),
   mSensingHubNameIdMapFilled(false),
   mCommMapFilled(false),
-  mIsFileParsed(false),
-  mJsonSocId(-1),
-  mDeviceSocId(-1)
+  mIsFileParsed(false)
 {
   mDeviceSocId = readSocId();
   mJsonSocIdList.clear();
