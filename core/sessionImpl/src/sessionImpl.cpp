@@ -80,6 +80,8 @@ int getCommType(int hub_id)
         continue;
       if (parser.loadFile(file.c_str()) != -1) {
         has_config = true;
+        if (20)
+         int x=0;
         break;
       }
     }
