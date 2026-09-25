@@ -1,0 +1,96 @@
+// @file sns_client_glink.proto
+//
+// @brief This file defines the data structures to enable communication between
+// Qualcomm Sensing hub and remote clients using Glink IPC.
+//
+// @copyright
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+// SPDX-License-Identifier: BSD-3-Clause-Clear
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_client.proto";
+import "sns_std_type.proto";
+
+// @brief Connect message
+// Client shall send "sns_client_glink_connect" message to connect to the sensor
+// service
+message sns_client_glink_connect {
+   // Empty payload.
+}
+
+// @brief Connect acknowledgement message
+// "sns_client_glink_connect_ack" message is sent by the Sensor service
+// in response to "sns_client_glink_connect" message
+message sns_client_glink_connect_ack {
+
+  // @brief Connection handle identifies the connection
+  // "connection_handle" shall be non-zero when connection is successful
+  // "connection_handle" shall be zero when connection is failed
+  optional fixed32 connection_handle = 1;
+  // @brief Maximum size of request supported by QSH Client manager over Glink.
+  optional fixed32 max_request_size = 2;
+  // @brief Maximum size of indication that QSH Client manager sends over Glink.
+  optional fixed32 max_indication_size = 3;
+}
+
+// @brief Disconnect message
+// Client shall send "sns_client_glink_disconnect" message to disconnect the
+// connection with Sensor service
+message sns_client_glink_disconnect {
+
+  // @brief Connection handle identifies the connection
+  optional fixed32 connection_handle = 1;
+}
+
+// @brief Request message
+message sns_client_glink_req {
+
+  // @brief Connection handle identifies the connection
+  optional fixed32 connection_handle = 1;
+
+  // @brief Request message
+  optional sns_client_request_msg request = 2;
+}
+
+// @brief Indication message
+message sns_client_glink_ind {
+  // @brief Connection handle identifies the connection
+  optional fixed32 connection_handle = 1;
+
+  // @brief Event message
+  optional sns_client_event_msg event = 2;
+}
+
+// @brief Response message
+// @brief Response Message is sent in response to every request message
+message sns_client_glink_resp {
+
+  // @brief Connection handle identifies the connection
+  optional fixed32 connection_handle = 1;
+
+  // @brief Error
+  optional sns_std_error error = 2;
+}
+
+// @brief Top level message for all glink clients
+// If the Sensor Service receives a message type it does not understand, it will
+// return a sns_client_glink_resp with error code SNS_STD_ERROR_NOT_SUPPORTED
+message sns_client_glink_msg {
+  // @brief Allows users to decode oneof structures at one go.
+  // Custom callback definition is allowed if this option is enabled.
+  // The callback gets invoked when pb_decode has decoded the which_msg tag,
+  // allowing user to fill the pb_callback_t fields accordingly.
+  option (nanopb_msgopt).submsg_callback = true;
+  oneof msg {
+    // @brief messages "0x1 - 0x3F" are reserved for client to server messages
+    sns_client_glink_connect connect = 0x01;
+    sns_client_glink_disconnect disconnect = 0x02;
+    sns_client_glink_req req = 0x03;
+
+    // @brief messages "0x40 - 0x7F" are reserved for server to client messages
+    sns_client_glink_connect_ack connect_ack = 0x40;
+    sns_client_glink_resp resp = 0x41;
+    sns_client_glink_ind ind = 0x42;
+  }
+}
