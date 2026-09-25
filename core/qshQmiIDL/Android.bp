@@ -1,0 +1,18 @@
+cc_library_shared {
+    name: "libQshQmiIDL",
+    srcs: [
+        "sns_client_api_v01.c",
+    ],
+    export_include_dirs: ["./"],
+    shared_libs: [
+        "libqmi_common_so",
+    ],
+    cflags: [
+        "-Werror",
+        "-Wall",
+        "-Wno-unused-parameter",
+        "-fexceptions",
+    ],
+    owner: "qti",
+    vendor: true,
+}

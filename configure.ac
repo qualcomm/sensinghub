@@ -37,9 +37,6 @@ AC_SUBST([PROTOBUF_CFLAGS])
 AC_SUBST([PROTOBUF_LIBS])
 AC_SUBST(PROTOBUF_VERSION)
 
-AC_SUBST([PROTOBUF_CFLAGS])
-AC_SUBST([PROTOBUF_LIBS])
-AC_SUBST(PROTOBUF_VERSION)
 
 AC_CHECK_PROG([PROTOC], [protoc], [protoc])
 AS_IF([test "x${PROTOC}" == "x"],
@@ -93,6 +90,43 @@ PKG_CHECK_MODULES([NANOPB], [nanopb],
   [NANOPB_LIBS="-lprotobuf-nanopb"])
 AC_SUBST([NANOPB_LIBS])
 
+# --- QMI path ---
+AC_ARG_WITH([qmi],
+    AC_HELP_STRING([--with-qmi=DIR],
+                   [Specify the location of the qmi libs path]),
+    [qmidir=$withval],
+    [qmidir=""])
+if test "x$qmidir" != "x"; then
+    QMI_PATH="${qmidir}"
+    AC_SUBST([QMI_PATH])
+else
+    AS_IF([test "x$QMIFRAMEWORK_CFLAGS" = "x" || test "x$QMIFRAMEWORK_LIBS" = "x"], [
+        PKG_CHECK_MODULES([QMIFRAMEWORK], [qmi-framework],
+            [AC_SUBST([QMIFRAMEWORK_CFLAGS])
+             AC_SUBST([QMIFRAMEWORK_LIBS])],
+            [AC_MSG_WARN([qmi-framework not found via pkg-config, skipping])])
+    ])
+fi
+AM_CONDITIONAL([USE_QMI_PATH], [test "x$qmidir" != "x"])
+AC_ARG_WITH([nanopb],
+    [AS_HELP_STRING([--with-nanopb=DIR], [path to nanopb headers])],
+    [NANOPB_DIR=$withval],
+    [NANOPB_DIR=""])
+AC_ARG_WITH([nanopb-gen],
+    [AS_HELP_STRING([--with-nanopb-gen=DIR], [path to nanopb generated headers])],
+    [NANOPB_GEN_DIR=$withval],
+    [NANOPB_GEN_DIR=""])
+AC_SUBST([NANOPB_DIR])
+AC_SUBST([NANOPB_GEN_DIR])
+AC_ARG_WITH([qmi-oss],
+  AS_HELP_STRING([--with-qmi-oss], [enable qmi oss code]),
+  [qmi_oss="$withval"],
+  [qmi_oss="no"])
+AS_IF([test "x$qmi_oss" != "xno"],
+  [AC_DEFINE([QMI_OSS_ENABLE], [1], [Enable the qmi oss code])])
+AC_ARG_WITH([glib],
+       AS_HELP_STRING([--with-glib],
+          [enable glib, building HLOS systems which use glib]))
 AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 m4_define([LT_MAJOR], [1])
 m4_define([LT_MINOR], [0])
@@ -107,7 +141,10 @@ AC_CONFIG_FILES([             \
         session/1.0/Makefile  \
         examples/SessionClient/Makefile \
         utils/Makefile \
-		sessionlogger/Makefile  \
+	sessionlogger/Makefile  \
+        core/Makefile \
+        core/qshQmiIDL/Makefile \
+        core/sessionImpl/Makefile \
         sensing-hub.pc
                ])
 AC_OUTPUT

@@ -1,0 +1,50 @@
+cc_library_shared {
+    name: "libQshSession",
+    defaults: [
+        "sns_wearable_target",
+        "sns_multihub_target",
+    ],
+    rtti: false,
+    srcs: [
+        "src/qmiSession.cpp",
+        "src/glinkSession.cpp",
+        "src/sessionImpl.cpp",
+        "src/sessionLoggerUtil.cpp",
+    ],
+    local_include_dirs: [
+        "inc",
+    ],
+    include_dirs:["vendor/qcom-opensource/sensing-hub/core/qshQmiIDL"],
+    cflags: [
+        "-Werror",
+        "-Wall",
+        "-Wno-unused-parameter",
+        "-fexceptions",
+    ],
+    header_libs: [
+        "libsensinghubcommon_headers",
+        "libsensinghubsession_headers",
+        "libsensinghublogger_headers",
+    ],
+    shared_libs: [
+        "liblog",
+        "libcutils",
+        "libutils",
+        "libqmi_common_so",
+        "libqmi_cci",
+        "libqmi_encdec",
+        "libQshQmiIDL",
+        "libsensinghubapi-c",
+        "libsensinghubapi-prop-c",
+        "libqshUtil",
+        "libsensinghublogger",
+    ],
+    static_libs: [
+        "libprotobuf-c-nano-32bit",
+    ],
+    sanitize:{
+        integer_overflow: true,
+    },
+    owner: "qti",
+    vendor: true,
+}
