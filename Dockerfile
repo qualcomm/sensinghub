@@ -75,6 +75,7 @@ RUN git clone --depth 1 --branch v0.1.4 https://github.com/qualcomm/qmi-framewor
     make -j"$(nproc)" && \
     make install && \
     ldconfig && \
+	sed -i 's|^Cflags: .*|Cflags: -I${includedir} -I${includedir}/qmi_framework|' /usr/lib/pkgconfig/qmi-framework.pc && \
     cd / && rm -rf /tmp/qmi-framework
 
 # Install Python packages
