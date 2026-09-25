@@ -36,14 +36,14 @@ sudo apt-get install -y --no-install-recommends \
 # Build and install QMI Framework (provides qmi_cci.h, qmi_idl_lib.h,
 # qmi_idl_lib_internal.h, common_v01.h, libqmi_common/libqencdec/libqcci/libqcsi
 # and qmi-framework.pc for pkg-config)
-RUN git clone --depth 1 --branch v0.1.4 https://github.com/qualcomm/qmi-framework.git /tmp/qmi-framework && \
+git clone --depth 1 --branch v0.1.4 https://github.com/qualcomm/qmi-framework.git /tmp/qmi-framework && \
     cd /tmp/qmi-framework && \
     autoreconf --install && \
     ./configure --prefix=/usr && \
     make -j"$(nproc)" && \
     make install && \
     ldconfig && \
-	  sed -i 's|^Cflags: .*|Cflags: -I${includedir} -I${includedir}/qmi_framework|' /usr/lib/pkgconfig/qmi-framework.pc && \
+	sed -i 's|^Cflags: .*|Cflags: -I${includedir} -I${includedir}/qmi_framework|' /usr/lib/pkgconfig/qmi-framework.pc && \
     cd / && rm -rf /tmp/qmi-framework
 
 # If the requested --host cross-compiler is not present, fall back to native build
