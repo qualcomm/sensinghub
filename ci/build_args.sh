@@ -5,4 +5,4 @@
 
 # Default build arguments for SensingHub
 
-BUILD_ARGS="--host=arm-poky-linux --prefix=/usr --enable-shared"
+BUILD_ARGS="--host=arm-poky-linux --prefix=/usr --enable-shared --with-qmi-oss"
