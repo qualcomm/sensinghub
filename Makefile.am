@@ -6,6 +6,8 @@ dirs = apis/proto \
        sessionlogger  \
        examples/SessionClient \
        services/sensorsdaemon
+       core \
+       examples/SessionClient
 
 SUBDIRS = $(dirs)
 
