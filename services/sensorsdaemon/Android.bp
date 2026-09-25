@@ -1,0 +1,36 @@
+soong_config_module_type {
+    name: "sensors_cc_defaults",
+    module_type: "cc_defaults",
+    config_namespace: "sensors_qti_config",
+    bool_variables: [
+        "isFastRPCDynamicPDSupported",
+    ],
+    properties: ["cflags"],
+}
+sensors_cc_defaults {
+    name: "sensors_qti_defaults",
+    soong_config_variables: {
+        isFastRPCDynamicPDSupported: {
+            cflags: ["-DSNS_FRPC_DYNAMIC_PD_SUPPORTED"],
+        },
+    },
+}
+cc_binary {
+    name: "sensors.qti",
+    srcs: [
+        "src/sensorsdaemon.cpp",
+    ],
+    defaults: ["sensors_qti_defaults"],
+    include_dirs: [
+        "vendor/qcom/opensource/fastrpc/inc",
+    ],
+    shared_libs: [
+        "liblog",
+        "libdl",
+        "libcutils",
+        "libutils",
+    ],
+    init_rc: ["vendor.sensors.daemon.rc"],
+    vendor: true,
+    owner: "qti",
+}

@@ -4,6 +4,8 @@ dirs = apis/proto \
        session/1.0  \
        utils \
        sessionlogger  \
+       examples/SessionClient \
+       services/sensorsdaemon
        core \
        examples/SessionClient
 

@@ -59,6 +59,29 @@ if test "x$with_common_includes" != "xno"; then
    CFLAGS="${CFLAGS} -I${common_incdir}"
 fi
 
+AC_ARG_WITH([services],
+    AC_HELP_STRING([--with-services=DIR],
+                   [Specify the location of the services path]),
+    [servicesdir=$withval],
+    [use_services=no])
+
+if test "x$use_services" != "xno"; then
+    SERVICES_PATH="${servicesdir}"
+    AC_SUBST(SERVICES_PATH)
+fi
+
+if test "x${use_services}" = "xyes"; then
+  CPPFLAGS="${CPPFLAGS} -DSENSORS_EXCLUDE_FASTRPC_INTERNAL_HEADERS"
+fi
+
+AM_CONDITIONAL([USE_SERVICES_PATH], [test "x$use_services" != "xno"])
+
+AC_ARG_WITH([fastrpc-includes],
+  AS_HELP_STRING([--with-fastrpc-includes=DIR], [Path to FASTRPC public headers]),
+  [FASTRPC_CFLAGS="-I$withval"],
+  [FASTRPC_CFLAGS=""])
+AC_SUBST([FASTRPC_CFLAGS])
+
 AC_ARG_WITH(systemd,
         AS_HELP_STRING([--with-systemd], [include services in systemd]),
         [SYSTEMD="yes"],
@@ -140,6 +163,7 @@ AC_CONFIG_FILES([             \
         apis/proto/Makefile   \
         session/1.0/Makefile  \
         examples/SessionClient/Makefile \
+        services/sensorsdaemon/Makefile \
         utils/Makefile \
 	sessionlogger/Makefile  \
         core/Makefile \
