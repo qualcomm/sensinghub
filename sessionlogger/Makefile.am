@@ -15,7 +15,7 @@ AM_CPPFLAGS = \
 libsensinghublogger_la_SOURCES =  ./src/LoggerFactory.cpp    \
                                                          ./src/SensorsDiagLogger.cpp
     
-include_HEADERS = $(srcdir)/inc/*.h
+pkginclude_HEADERS = $(srcdir)/inc/*.h
 
 requiredlibs = $(top_builddir)/apis/proto/libsensinghubapi-c.la    \
                        $(top_builddir)/session/1.0/libsensinghubsession.la

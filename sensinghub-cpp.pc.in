@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+protodir=@datadir@/@PACKAGE@/proto
+
+Name: sensinghub-cpp
+Description: sensinghub library protobuf C++ API
+Version: @PACKAGE_VERSION@
+Requires: protobuf
+Cflags: -I${includedir}/sensinghub/proto_gen
+Libs: -L${libdir} -lsensinghubapi

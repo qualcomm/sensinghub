@@ -1,0 +1,11 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+protodir=@datadir@/@PACKAGE@/proto
+
+Name: sensinghub
+Description: sensinghub library (nanopb API)
+Version: @PACKAGE_VERSION@
+Cflags: -I${includedir}/sensinghub -I${includedir}/sensinghub/nanopb_gen
+Libs: -L${libdir} -lsensinghubsession -lqshUtil -lsensinghublogger -lsensinghubapi-c @NANOPB_LIBS@

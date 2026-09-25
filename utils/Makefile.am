@@ -19,7 +19,7 @@ cpp_sources_qshutils = ./src/qshLog.cpp \
                        ./src/qshJsonParser.cpp \
                        ./src/qshPb.cpp
 
-include_HEADERS = $(srcdir)/inc/qshJsonParser.h \
+pkginclude_HEADERS = $(srcdir)/inc/qshJsonParser.h \
                   $(srcdir)/inc/qshLog.h        \
                   $(srcdir)/inc/qshPb.h         \
                   $(srcdir)/inc/qshSSR.h        \

@@ -9,6 +9,6 @@ dirs = apis/proto \
 SUBDIRS = $(dirs)
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = sensing-hub.pc
+pkgconfig_DATA = sensinghub.pc sensinghub-cpp.pc
 
 EXTRA_DIST = $(pkgconfig_DATA) README.md LICENSE.txt

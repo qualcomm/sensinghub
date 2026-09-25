@@ -30,7 +30,7 @@ AM_CPPFLAGS = -I./  \
               -I$(NANOPB_GEN_DIR)
 
 proto_list = $(shell find $(srcdir)/ -name "*.proto")
-proto_filesdir = /etc/sensors/proto
+proto_filesdir = $(pkgdatadir)/proto
 proto_files_DATA = $(proto_list)
 
 nodist_proto_SOURCES =  $(PROTOGEN_DIR)/google/protobuf/descriptor.pb.cc     \
@@ -114,14 +114,12 @@ BUILT_SOURCES = $(PROTOGEN_DIR)/google/protobuf/descriptor.pb.h     \
                 $(PROTOGEN_DIR)/sns_color.pb.h
 
 sources_libsensinghub = $(nodist_proto_SOURCES)
-include_HEADERS = $(proto_list)
 
-protogendir = $(includedir)/proto_gen
+protogendir = $(pkgincludedir)/proto_gen
 protogen_HEADERS = $(filter %.pb.h,$(BUILT_SOURCES))
 
-nanopb_includedir = $(includedir)/nanopb_gen
-nanopb_include_HEADERS =  $(PROTOGEN_DIR)/nanopb.pb.h                         \
-                         $(NANOPB_GEN_DIR)/sns_std_sensor.pb.h                 \
+nanopb_includedir = $(pkgincludedir)/nanopb_gen
+nanopb_include_HEADERS =  $(NANOPB_GEN_DIR)/sns_std_sensor.pb.h                 \
                          $(NANOPB_GEN_DIR)/sns_physical_sensor_test.pb.h       \
                          $(NANOPB_GEN_DIR)/sns_std_event_gated_sensor.pb.h     \
                          $(NANOPB_GEN_DIR)/sns_cal.pb.h                        \
@@ -163,8 +161,6 @@ nanopb_include_HEADERS =  $(PROTOGEN_DIR)/nanopb.pb.h                         \
 CLEANFILES =
 
 AUTOMAKE_OPTIONS = foreign
-
-library_includedir = $(pkgincludedir)
 
 lib_LTLIBRARIES = libsensinghubapi.la libsensinghubapi-c.la
 
