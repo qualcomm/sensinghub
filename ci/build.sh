@@ -69,9 +69,9 @@ rm -rf apis/proto/proto_gen apis/proto/nanopb_gen
 
 autoreconf -fi
 ./configure ${BUILD_ARGS} \
-  CFLAGS="-I/usr/include/nanopb" \
-  CXXFLAGS="-I/usr/include/nanopb" \
-  CPPFLAGS="-I/usr/include/nanopb" \
+  CPPFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
+  CFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
+  CXXFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
   LDFLAGS="-lprotobuf-nanopb"
 make -j"$(nproc)"
 make DESTDIR="${WORKSPACE}/build" install
