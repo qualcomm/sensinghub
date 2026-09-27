@@ -68,7 +68,7 @@ RUN apt-get update && apt install -y apt-transport-https apt-utils fuseext2 \
 # Build and install QMI Framework (provides qmi_cci.h, qmi_idl_lib.h,
 # qmi_idl_lib_internal.h, common_v01.h, libqmi_common/libqencdec/libqcci/libqcsi
 # and qmi-framework.pc for pkg-config)
-RUN git clone --depth 1 --branch v0.1.4 https://github.com/qualcomm/qmi-framework.git /tmp/qmi-framework && \
+RUN git clone --depth 1 https://github.com/qualcomm/qmi-framework.git /tmp/qmi-framework && \
     cd /tmp/qmi-framework && \
     autoreconf --install && \
     ./configure --prefix=/usr && \
@@ -77,6 +77,13 @@ RUN git clone --depth 1 --branch v0.1.4 https://github.com/qualcomm/qmi-framewor
     ldconfig && \
 	sed -i 's|^Cflags: .*|Cflags: -I${includedir} -I${includedir}/qmi_framework|' /usr/lib/pkgconfig/qmi-framework.pc && \
     cd / && rm -rf /tmp/qmi-framework
+
+# Fetch FastRPC public headers (provides remote.h, AEEStdErr.h, etc. required
+# by services/sensorsdaemon)
+RUN git clone --depth 1 https://github.com/qualcomm/fastrpc.git /tmp/fastrpc && \
+    mkdir -p /usr/include/fastrpc && \
+    cp /tmp/fastrpc/inc/*.h /usr/include/fastrpc/ && \
+    rm -rf /tmp/fastrpc
 
 # Install Python packages
 RUN pip install --no-cache-dir requests kas==4.7 --break-system-packages

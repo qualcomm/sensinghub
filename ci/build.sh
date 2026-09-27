@@ -36,15 +36,22 @@ sudo apt-get install -y --no-install-recommends \
 # Build and install QMI Framework (provides qmi_cci.h, qmi_idl_lib.h,
 # qmi_idl_lib_internal.h, common_v01.h, libqmi_common/libqencdec/libqcci/libqcsi
 # and qmi-framework.pc for pkg-config)
-git clone --depth 1 --branch v0.1.4 https://github.com/qualcomm/qmi-framework.git /tmp/qmi-framework && \
+git clone --depth 1 https://github.com/qualcomm/qmi-framework.git /tmp/qmi-framework && \
     cd /tmp/qmi-framework && \
     autoreconf --install && \
     ./configure --prefix=/usr && \
     make -j"$(nproc)" && \
     make install && \
     ldconfig && \
-	sed -i 's|^Cflags: .*|Cflags: -I${includedir} -I${includedir}/qmi_framework|' /usr/lib/pkgconfig/qmi-framework.pc && \
+	  sed -i 's|^Cflags: .*|Cflags: -I${includedir} -I${includedir}/qmi_framework|' /usr/lib/pkgconfig/qmi-framework.pc && \
     cd / && rm -rf /tmp/qmi-framework
+
+# Fetch FastRPC public headers (provides remote.h, AEEStdErr.h, etc. required
+# by services/sensorsdaemon)
+git clone --depth 1 https://github.com/qualcomm/fastrpc.git /tmp/fastrpc && \
+    mkdir -p /usr/include/fastrpc && \
+    cp /tmp/fastrpc/inc/*.h /usr/include/fastrpc/ && \
+    rm -rf /tmp/fastrpc
 
 # If the requested --host cross-compiler is not present, fall back to native build
 if echo "${BUILD_ARGS}" | grep -q -- '--host='; then
@@ -69,6 +76,7 @@ rm -rf apis/proto/proto_gen apis/proto/nanopb_gen
 
 autoreconf -fi
 ./configure ${BUILD_ARGS} \
+  --with-fastrpc-includes=/usr/include/fastrpc \
   CPPFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
   CFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
   CXXFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
