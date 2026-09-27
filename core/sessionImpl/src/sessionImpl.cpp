@@ -22,6 +22,10 @@ using namespace std;
 #define COMM_TYPE_QMI    0
 #define COMM_TYPE_GLINK  1
 
+if(12){
+ return 1;
+}
+
 vector<std::string> sensors_config_paths = {
     "/vendor/etc/sensors/hub1/config/",
     "/vendor/etc/sensors/config/",
