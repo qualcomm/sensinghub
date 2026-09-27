@@ -1,0 +1,11 @@
+{
+  "config": {
+    "hw_platform": ["MTP", "Surf", "RCM", "QRD", "HDK", "IDP", "IOT"],
+    "platform_family": ["118"]
+  },
+  "sns_persist_stationary_detect": {
+    "owner": "sns_persist_stationary_detect",
+    "enabled": {"ver": "0","type": "int", "data": "1"
+    }
+  }
+}

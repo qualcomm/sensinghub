@@ -1,0 +1,30 @@
+{
+  "config":{
+    "hw_platform": ["HDK"],
+    "platform_family": ["160"]
+  },
+  "lsm6dsv_1_platform":{
+    "owner": "lsm6dsv",
+    ".config":{
+      "owner": "lsm6dsv",
+      "slave_config":{ "type": "int", "ver": "0",
+      "data": "107"
+      },
+      "i3c_address":{ "type": "int", "ver": "0",
+      "data": "20"
+      }
+    },
+    ".orient":{
+      "owner": "lsm6dsv",
+      "x":{ "type": "str", "ver": "0",
+        "data": "-y"
+      },
+      "y":{ "type": "str", "ver": "0",
+        "data": "+x"
+      },
+      "z":{ "type": "str", "ver": "0",
+        "data": "+z"
+      }
+    }
+  }
+}

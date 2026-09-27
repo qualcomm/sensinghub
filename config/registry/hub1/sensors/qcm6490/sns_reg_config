@@ -1,0 +1,6 @@
+version=1
+file=input=json.lst
+file=soc_id=/sys/devices/soc0/soc_id
+file=output=/var/cache/sensors/registry/registry
+property=persist.vendor.sensors.enable.property=/etc/sensors/registry/file1
+property=persist.vendor.sensors.enable.property1=/etc/sensors/registry/file2

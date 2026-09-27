@@ -1,0 +1,16 @@
+{
+  "config":{
+    "soc_id": ["709", "710", "711"]
+  },
+  "power":{
+    "owner": "power_manager",
+    ".island":{
+      "owner": "power_manager",
+      "enable_island":{ "type": "int", "ver": "0",
+        "data": "1"
+      },
+     "island_debug_enable":{ "type": "int", "ver": "0",
+        "data": "0"}
+    }
+  }
+}

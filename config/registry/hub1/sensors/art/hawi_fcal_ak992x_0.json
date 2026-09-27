@@ -1,0 +1,102 @@
+{
+  "config":{
+    "hw_platform": ["MTP", "Surf", "RCM"],
+    "platform_family": ["170"]
+  },
+  "ak0991x_0_platform":{
+    "owner": "sns_ak0991x",
+    ".mag":{
+      "owner": "sns_ak0991x",
+      ".fac_cal":{
+        "owner": "sns_ak0991x",
+        ".corr_mat":{
+          "owner": "sns_ak0991x",
+          "0_0":{ "type": "flt", "ver": "0",
+            "data": "0.9309"
+          },
+          "0_1":{ "type": "flt", "ver": "0",
+            "data": "-0.0675"
+          },
+          "0_2":{ "type": "flt", "ver": "0",
+            "data": "-0.0112"
+          },
+          "1_0":{ "type": "flt", "ver": "0",
+            "data": "-0.0184"
+          },
+          "1_1":{ "type": "flt", "ver": "0",
+            "data": "1.0135"
+          },
+          "1_2":{ "type": "flt", "ver": "0",
+            "data": "0.0067"
+          },
+          "2_0":{ "type": "flt", "ver": "0",
+            "data": "0.0040"
+          },
+          "2_1":{ "type": "flt", "ver": "0",
+            "data": "-0.0020"
+          },
+          "2_2":{ "type": "flt", "ver": "0",
+            "data": "1.0406"
+          }
+        },
+        ".bias":{
+          "owner": "sns_ak0991x",
+          "x":{ "type": "flt", "ver": "0",
+            "data": "0.0"
+          },
+          "y":{ "type": "flt", "ver": "0",
+            "data": "0.0"
+          },
+          "z":{ "type": "flt", "ver": "0",
+            "data": "0.0"
+          }
+        }
+      },
+      ".fac_cal_2":{
+        "owner": "sns_ak0991x",
+        ".corr_mat":{
+          "owner": "sns_ak0991x",
+          "0_0":{ "type": "flt", "ver": "0",
+            "data": "0.9309"
+          },
+          "0_1":{ "type": "flt", "ver": "0",
+            "data": "-0.0675"
+          },
+          "0_2":{ "type": "flt", "ver": "0",
+            "data": "-0.0112"
+          },
+          "1_0":{ "type": "flt", "ver": "0",
+            "data": "-0.0184"
+          },
+          "1_1":{ "type": "flt", "ver": "0",
+            "data": "1.0135"
+          },
+          "1_2":{ "type": "flt", "ver": "0",
+            "data": "0.0067"
+          },
+          "2_0":{ "type": "flt", "ver": "0",
+            "data": "0.0040"
+          },
+          "2_1":{ "type": "flt", "ver": "0",
+            "data": "-0.0020"
+          },
+          "2_2":{ "type": "flt", "ver": "0",
+            "data": "1.0406"
+          }
+        },
+        ".bias":{
+          "owner": "sns_ak0991x",
+          "x":{ "type": "flt", "ver": "0",
+            "data": "0.0"
+          },
+          "y":{ "type": "flt", "ver": "0",
+            "data": "0.0"
+          },
+          "z":{ "type": "flt", "ver": "0",
+            "data": "0.0"
+          }
+        }
+      }
+    }
+  }
+}

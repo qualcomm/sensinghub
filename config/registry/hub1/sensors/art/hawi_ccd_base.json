@@ -1,0 +1,15 @@
+{
+  "config":{
+    "hw_platform": ["MTP","QRD","Dragon","Surf","HDK","RCM"],
+    "platform_family": ["170"]
+  },
+  "dae":{
+    "owner": "sns_dae",
+    "ccd_base_addr":{ "type": "int", "ver": "0",
+                "data": "0xEF780000"
+    },
+    "ccd_base_addr_dae":{ "type": "int", "ver": "0",
+                "data": "0x62780000"
+    }
+  }
+}

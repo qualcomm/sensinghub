@@ -37,7 +37,6 @@ AC_SUBST([PROTOBUF_CFLAGS])
 AC_SUBST([PROTOBUF_LIBS])
 AC_SUBST(PROTOBUF_VERSION)
 
-
 AC_CHECK_PROG([PROTOC], [protoc], [protoc])
 AS_IF([test "x${PROTOC}" == "x"],
       [AC_MSG_ERROR([ProtoBuf compiler "protoc" not found.])])
@@ -122,11 +121,57 @@ AC_ARG_WITH([qmi-oss],
   AS_HELP_STRING([--with-qmi-oss], [enable qmi oss code]),
   [qmi_oss="$withval"],
   [qmi_oss="no"])
+
 AS_IF([test "x$qmi_oss" != "xno"],
   [AC_DEFINE([QMI_OSS_ENABLE], [1], [Enable the qmi oss code])])
+
 AC_ARG_WITH([glib],
        AS_HELP_STRING([--with-glib],
           [enable glib, building HLOS systems which use glib]))
+
+# ---- sensors-registry ----
+AC_ARG_WITH([base-libdir],
+    AS_HELP_STRING([--with-base-libdir=DIR],
+                   [Base lib dir for firmware installation (default: /usr/lib)]),
+    [base_libdir=$withval],
+    [base_libdir="/usr/lib"])
+AC_SUBST([base_libdir])
+
+AC_ARG_ENABLE(target-qcm6490,
+    AS_HELP_STRING([--enable-target-qcm6490], [enable for qcm6490 target]),
+    [QCM6490="yes"], [QCM6490="no"])
+AM_CONDITIONAL([QCM6490_TARGET], [test "x${QCM6490}" != "xno"])
+
+AC_ARG_ENABLE(target-sc8380x,
+    AS_HELP_STRING([--enable-target-sc8380x], [enable for sc8380x target]),
+    [SC8380X="yes"], [SC8380X="no"])
+AM_CONDITIONAL([SC8380X_TARGET], [test "x${SC8380X}" != "xno"])
+
+AC_ARG_ENABLE(target-sm8750,
+    AS_HELP_STRING([--enable-target-sm8750], [enable for sm8750 target]),
+    [SM8750="yes"], [SM8750="no"])
+AM_CONDITIONAL([SM8750_TARGET], [test "x${SM8750}" != "xno"])
+
+AC_ARG_ENABLE(target-sm8850,
+    AS_HELP_STRING([--enable-target-sm8850], [enable for sm8850 target]),
+    [SM8850="yes"], [SM8850="no"])
+AM_CONDITIONAL([SM8850_TARGET], [test "x${SM8850}" != "xno"])
+
+AC_ARG_ENABLE(target-sc8480xp,
+    AS_HELP_STRING([--enable-target-sc8480xp], [enable for sc8480xp target]),
+    [SC8480XP="yes"], [SC8480XP="no"])
+AM_CONDITIONAL([SC8480XP_TARGET], [test "x${SC8480XP}" != "xno"])
+
+AC_ARG_ENABLE(target-sm4125,
+    AS_HELP_STRING([--enable-target-sm4125], [enable for sm4125 target]),
+    [SM4125="yes"], [SM4125="no"])
+AM_CONDITIONAL([SM4125_TARGET], [test "x${SM4125}" != "xno"])
+
+AC_ARG_ENABLE(target-shikra,
+    AS_HELP_STRING([--enable-target-shikra], [enable for shikra target]),
+    [SHIKRA="yes"], [SHIKRA="no"])
+AM_CONDITIONAL([SHIKRA_TARGET], [test "x${SHIKRA}" != "xno"])
+
 AM_CONDITIONAL(USE_GLIB, test "x${with_glib}" = "xyes")
 m4_define([LT_MAJOR], [1])
 m4_define([LT_MINOR], [0])
@@ -141,10 +186,11 @@ AC_CONFIG_FILES([             \
         session/1.0/Makefile  \
         examples/SessionClient/Makefile \
         utils/Makefile \
-	sessionlogger/Makefile  \
+        sessionlogger/Makefile  \
         core/Makefile \
         core/qshQmiIDL/Makefile \
         core/sessionImpl/Makefile \
+        config/Makefile \
         sensing-hub.pc
                ])
 AC_OUTPUT

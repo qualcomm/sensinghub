@@ -1,0 +1,27 @@
+{
+  "config": {
+    "soc_id": "756, 758, 759"
+  },
+  "sensing_hubs": {
+    "owner": "sensing_hubs",
+    ".sensing_hub_1": {
+      "owner": "sensing_hub_1",
+      "sensing_hub_id": { "type": "int", "ver": "0", "data": "1" },
+      "platform_id": { "type": "str","ver": "0", "data": "hub_1" },
+      "client_comm_type":{ "type": "int", "ver": "0", "data": "1"},
+      ".client_comm": {
+        "owner": "sensing_hub_1",
+        "link_name": { "type": "str", "ver": "0", "data":"lpaicp"},
+        ".links": {
+          "owner": "sensing_hub_1",
+          ".link_0": {
+            "owner": "sensing_hub_1",
+            "id" : { "type": "int", "ver": "0",  "data": "0" },
+            "link_name": { "type": "str", "ver": "0", "data": "apps" },
+            "no_of_channels": { "type": "int", "ver": "0", "data": "9" }
+          }
+        }
+      }
+    }
+  }
+}

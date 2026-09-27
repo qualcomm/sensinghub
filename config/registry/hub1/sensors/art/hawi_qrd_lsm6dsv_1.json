@@ -1,0 +1,22 @@
+{
+  "config":{
+    "hw_platform": ["QRD"],
+    "platform_family": ["170"],
+    "platform_version": ["65536"]
+  },
+  "lsm6dsv_1_platform":{
+    "owner": "lsm6dsv",
+    ".orient":{
+      "owner": "lsm6dsv",
+      "x":{ "type": "str", "ver": "0",
+        "data": "-y"
+      },
+      "y":{ "type": "str", "ver": "0",
+        "data": "+x"
+      },
+      "z":{ "type": "str", "ver": "0",
+        "data": "+z"
+      }
+    }
+  }
+}
