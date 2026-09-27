@@ -1,0 +1,14 @@
+{
+  "config":{
+    "hw_platform": ["MTP","QRD","Dragon","Surf","HDK","RCM"],
+    "platform_family": ["170", "173"]
+  },
+  "sfe": {
+    "owner": "sns_sfe",
+    "sfe_mode": {
+      "type": "int",
+      "ver": "0",
+      "data": "1"
+    }
+  }
+}

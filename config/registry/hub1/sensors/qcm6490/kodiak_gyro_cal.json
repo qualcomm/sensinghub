@@ -1,0 +1,12 @@
+{
+  "config": {
+    "hw_platform": ["MTP", "Surf", "RCM" ,"QRD","IDP"],
+    "soc_id": ["497"]
+  },
+  "sns_gyro_cal_config": {
+    "owner": "sns_gyro_cal",
+    "calibration_period": {"type": "int","ver": "0",
+      "data": "60"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "config":{
+    "hw_platform": ["MTP"],
+    "platform_family": ["160"]
+  },
+  "lsm6dsv_1_platform":{
+    "owner": "lsm6dsv",
+    ".config":{
+      "owner": "lsm6dsv",
+      "slave_config":{ "type": "int", "ver": "0",
+      "data": "0"
+      },
+      "i3c_address":{ "type": "int", "ver": "0",
+      "data": "20"
+      },
+      "manufacturer_id":{ "type": "int", "ver": "0",
+      "data": "0x0208"
+      },
+      "provisional_id":{ "type": "int", "ver": "0",
+      "data": "0x0070920B"
+      }
+    },
+    ".orient":{
+      "owner": "lsm6dsv",
+      "x":{ "type": "str", "ver": "0",
+        "data": "-x"
+      },
+      "y":{ "type": "str", "ver": "0",
+        "data": "-y"
+      },
+      "z":{ "type": "str", "ver": "0",
+        "data": "+z"
+      }
+    }
+  }
+}

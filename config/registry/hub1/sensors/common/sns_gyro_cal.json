@@ -1,0 +1,19 @@
+{
+  "config": {
+  },
+  "sns_gyro_cal_config": {
+    "owner": "sns_gyro_cal",
+    "num_samples": {"type": "int","ver": "0",
+      "data": "64"
+    },
+    "variance_threshold": {"type": "flt","ver": "0",
+      "data": "0.00000085"
+    },
+    "sample_rate": {"type": "flt","ver": "0",
+     "data": "10.0"
+    },
+    "bias_threshold": {"type": "flt","ver": "0",
+     "data": "0.20"
+    }
+  }
+}
