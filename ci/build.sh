@@ -5,6 +5,24 @@
 
 set -euxo pipefail
 
+# utils/inc/qshPb.h wraps its nanopb includes in an outer extern "C" block.
+# nanopb's own pb.h already guards its C-linkage declarations internally
+# and deliberately declares a C++-only "nanopb::MessageDescriptor" template
+# after that internal guard closes; qshPb.h's outer extern "C" re-wraps that
+# template too, giving it illegal C linkage. This is a source bug that
+# should be fixed in qshPb.h (drop the outer extern "C"); until then, patch
+# the installed header in place so C++ TUs compile.
+patch_nanopb_header_for_cxx_linkage() {
+  local pb_h="/usr/include/pb.h"
+  if grep -q 'extern "C++"' "${pb_h}"; then
+    return 0
+  fi
+  sudo sed -i \
+    -e '/^namespace nanopb {$/i extern "C++" {' \
+    -e '/^}  \/\/ namespace nanopb$/a }' \
+    "${pb_h}"
+}
+
 echo "Running SensingHub build script..."
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,8 +48,11 @@ sudo apt-get install -y --no-install-recommends \
   libprotobuf-dev \
   protobuf-compiler \
   libglib2.0-dev \
+  libbsd-dev \
   nanopb \
   libnanopb-dev
+
+patch_nanopb_header_for_cxx_linkage
 
 # Build and install QMI Framework (provides qmi_cci.h, qmi_idl_lib.h,
 # qmi_idl_lib_internal.h, common_v01.h, libqmi_common/libqencdec/libqcci/libqcsi
@@ -75,12 +96,25 @@ mkdir -p build
 rm -rf apis/proto/proto_gen apis/proto/nanopb_gen
 
 autoreconf -fi
+# utils/src/qshJsonParser.cpp calls strlcpy(), a BSD extension not provided
+# by glibc; force-include <bsd/string.h> (from libbsd-dev) for the
+# declaration and link against libbsd for the definition. This is a source
+# bug that should be fixed by adding the include directly in
+# qshJsonParser.cpp and declaring the libbsd dependency in
+# utils/Makefile.am/configure.ac.
+#
+# core/sessionImpl statically initializes std::atomic<T> class members
+# (e.g. "std::atomic<bool> glinkSession::_is_thread_created = false;"),
+# which needs C++17's guaranteed copy elision to compile; std::atomic's
+# copy constructor is deleted, so pre-C++17 modes reject it. This should be
+# expressed in configure.ac (e.g. AX_CXX_COMPILE_STDCXX([17])) rather than
+# passed as a raw flag here.
 ./configure ${BUILD_ARGS} \
   --with-fastrpc-includes=/usr/include/fastrpc \
   CPPFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
-  CFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
-  CXXFLAGS="-I/usr/include/nanopb -I/usr/include/qmi_framework" \
-  LDFLAGS="-lprotobuf-nanopb"
+  CFLAGS="-include bsd/string.h -I/usr/include/nanopb -I/usr/include/qmi_framework" \
+  CXXFLAGS="-std=c++17 -include bsd/string.h -I/usr/include/nanopb -I/usr/include/qmi_framework" \
+  LDFLAGS="-lprotobuf-nanopb -lbsd"
 make -j"$(nproc)"
 make DESTDIR="${WORKSPACE}/build" install
 
