@@ -7,7 +7,7 @@
 
 extern "C" {
 #define PB_DEBUG 1
-#include "pb.h"
+#include <pb.h>
 #include "pb_decode.h"
 #include "pb_encode.h"
 }

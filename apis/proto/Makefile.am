@@ -117,10 +117,10 @@ BUILT_SOURCES = $(PROTOGEN_DIR)/google/protobuf/descriptor.pb.h     \
 sources_libsensinghub = $(nodist_proto_SOURCES)
 include_HEADERS = $(proto_list)
 
-protogendir = $(includedir)/proto_gen
+protogendir = $(includedir)
 protogen_HEADERS = $(filter %.pb.h,$(BUILT_SOURCES))
 
-nanopb_includedir = $(includedir)/nanopb_gen
+nanopb_includedir = $(includedir)/sensinghub/nanopb_gen
 nanopb_include_HEADERS =  $(PROTOGEN_DIR)/nanopb.pb.h                         \
                          $(NANOPB_GEN_DIR)/sns_std_sensor.pb.h                 \
                          $(NANOPB_GEN_DIR)/sns_physical_sensor_test.pb.h       \

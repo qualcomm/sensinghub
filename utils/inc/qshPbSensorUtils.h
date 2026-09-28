@@ -15,9 +15,9 @@
 #include "qshPb.h"
 #include <map>
 #include "suid.h"
-#include "sns_suid.pb.h"
-#include "sns_std_type.pb.h"
-#include "sns_client.pb.h"
+#include <sns_suid.pb.h>
+#include <sns_std_type.pb.h>
+#include <sns_client.pb.h>
 
 namespace qshPb {
 
