@@ -129,18 +129,14 @@ else
             [AC_MSG_WARN([qmi-framework not found via pkg-config, skipping])])
     ])
 fi
+
 AM_CONDITIONAL([USE_QMI_PATH], [test "x$qmidir" != "x"])
-AC_ARG_WITH([nanopb],
-    [AS_HELP_STRING([--with-nanopb=DIR], [path to nanopb headers])],
-    [NANOPB_DIR=$withval],
-    [NANOPB_DIR=""])
 
 AC_ARG_WITH([nanopb-gen],
     [AS_HELP_STRING([--with-nanopb-gen=DIR], [path to nanopb generated headers])],
     [NANOPB_GEN_DIR=$withval],
     [NANOPB_GEN_DIR=""])
 
-AC_SUBST([NANOPB_DIR])
 AC_SUBST([NANOPB_GEN_DIR])
 
 AC_ARG_WITH([qmi-oss],
