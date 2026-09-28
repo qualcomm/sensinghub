@@ -1,6 +1,7 @@
 SENSING_HUB_PRODUCTS := libsensinghubapi
 SENSING_HUB_PRODUCTS += libsensinghubapi-c
 SENSING_HUB_PRODUCTS += libsensinghubsession
+SENSING_HUB_PRODUCTS += sensors.qti
 SENSING_HUB_PRODUCTS += libqshUtil
 SENSING_HUB_PRODUCTS += libsensinghublogger
 
