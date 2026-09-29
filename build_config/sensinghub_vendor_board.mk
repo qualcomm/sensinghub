@@ -16,6 +16,9 @@ $(call soong_config_set,qtisensors,hy11,false)
 $(call soong_config_set,qtisensors,hy22,false)
 $(call soong_config_set,qtisensors,hwasan,false)
 
+$(call add_soong_config_namespace,sensors_qti_config)
+$(call add_soong_config_var_value,sensors_qti_config,isFastRPCDynamicPDSupported,true)
+
 ifneq ($(BUILD_SENSORS_TECHPACK_SOURCE), true)
 $(call soong_config_set,qtisensors,hy00,true)
 $(call soong_config_set,qtisensors,hy11,true)
