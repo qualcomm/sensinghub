@@ -41,16 +41,16 @@ git clone --depth 1 https://github.com/qualcomm/qmi-framework.git /tmp/qmi-frame
     autoreconf --install && \
     ./configure --prefix=/usr && \
     make -j"$(nproc)" && \
-    make install && \
-    ldconfig && \
-	  sed -i 's|^Cflags: .*|Cflags: -I${includedir} -I${includedir}/qmi_framework|' /usr/lib/pkgconfig/qmi-framework.pc && \
+    sudo make install && \
+    sudo ldconfig && \
+	  sudo sed -i 's|^Cflags: .*|Cflags: -I${includedir} -I${includedir}/qmi_framework|' /usr/lib/pkgconfig/qmi-framework.pc && \
     cd / && rm -rf /tmp/qmi-framework
 
 # Fetch FastRPC public headers (provides remote.h, AEEStdErr.h, etc. required
 # by services/sensorsdaemon)
 git clone --depth 1 https://github.com/qualcomm/fastrpc.git /tmp/fastrpc && \
-    mkdir -p /usr/include/fastrpc && \
-    cp /tmp/fastrpc/inc/*.h /usr/include/fastrpc/ && \
+    sudo mkdir -p /usr/include/fastrpc && \
+    sudo cp /tmp/fastrpc/inc/*.h /usr/include/fastrpc/ && \
     rm -rf /tmp/fastrpc
 
 # If the requested --host cross-compiler is not present, fall back to native build
