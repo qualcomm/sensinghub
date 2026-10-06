@@ -11,6 +11,7 @@
 #include "SessionFactory.h"
 #include "qmiSession.h"
 #include "glinkSession.h"
+#include "rpmsgSession.h"
 #include "qshJsonParser.h"
 
 using namespace ::com::quic::sensinghub::session::V1_0::implementation;
@@ -21,6 +22,7 @@ using namespace std;
 
 #define COMM_TYPE_QMI    0
 #define COMM_TYPE_GLINK  1
+#define COMM_TYPE_RPMSG  2
 
 vector<std::string> sensors_config_paths = {
     "/vendor/etc/sensors/hub1/config/",
@@ -117,6 +119,23 @@ ISession* getSession(int hub_id)
 
         sns_logi("Creating GLINK session");
         return new glinkSession(
+        parser.getCommHandleAttrs(hub_id), hub_id, hub_name);
+      }
+
+      case COMM_TYPE_RPMSG: {
+        if (hub_id == -1)
+          hub_id = SENSING_HUB_1;
+
+        auto& parser = qshJsonParser::getInstance();
+        string hub_name = parser.getHubName(hub_id);
+
+        if (hub_name.empty()) {
+          sns_loge("Invalid hub id %d", hub_id);
+          return nullptr;
+        }
+
+        sns_logi("Creating RPMSG session");
+        return new rpmsgSession(
         parser.getCommHandleAttrs(hub_id), hub_id, hub_name);
       }
 

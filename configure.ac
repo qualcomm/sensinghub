@@ -118,6 +118,7 @@ AC_ARG_WITH([qmi],
                    [Specify the location of the qmi libs path]),
     [qmidir=$withval],
     [qmidir=""])
+
 if test "x$qmidir" != "x"; then
     QMI_PATH="${qmidir}"
     AC_SUBST([QMI_PATH])
