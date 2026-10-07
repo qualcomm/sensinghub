@@ -48,10 +48,8 @@ talos_list = $(shell find  $(srcdir)/registry/hub1/sensors/talos/*.json -type f)
 talos_jsondir = $(reg_config_dir)/config
 talos_json_DATA = $(talos_list)
 
-shikra_list = $(wildcard $(srcdir)/registry/hub1/sensors/shikra/*.json) \
-              $(wildcard $(srcdir)/registry/hub1/sensors/shikra/json.lst) \
-              $(wildcard $(srcdir)/registry/hub1/sensors/common/*.json)
-shikra_jsondir = $(shikra_dir)/config
+shikra_list = $(wildcard $(srcdir)/registry/hub1/sensors/shikra/*.json)
+shikra_jsondir = $(reg_config_dir)/config
 shikra_json_DATA = $(shikra_list)
 
 output_filesdir = $(shikra_out_dir)

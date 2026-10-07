@@ -7,10 +7,43 @@ SourcePath=/usr/bin/sensors.qti
 
 [Service]
 Restart=always
+RemainAfterExit=yes
+
+ExecCondition=/bin/sh -c 'SOC=$(tr -d "\n" < /sys/devices/soc0/soc_id); \
+case "$SOC" in \
+  674|675|656|676|667) \
+    echo "Service disabled for this platform SOC=$SOC"; exit 1 ;; \
+  *) exit 0 ;; \
+esac'
+
 ExecStartPre=+/bin/mkdir -p /var/cache/sensors/registry/registry
-ExecStartPre=+/bin/cp -u /etc/sensors/registry/sns_reg_version /var/cache/sensors/registry/
+
+ExecStartPre=+/bin/cp -n /etc/sensors/registry/sns_reg_version /var/cache/sensors/registry/
+
+ExecStartPre=+/bin/sh -c 'SOC=$(tr -d "\n" < /sys/devices/soc0/soc_id); \
+  case "$SOC" in \
+    756|758|759) \
+      echo "Creating symlink paths for SOC=$SOC"; \
+      mkdir -p /lib/firmware/qcom/shikra || exit 1; \
+      mkdir -p /var/lib/tqftpserv || exit 1; \
+      rm -rf /lib/firmware/qcom/shikra/sensors || exit 1; \
+      rm -rf /var/lib/tqftpserv/sensors || exit 1; \
+      ln -sfn /etc/sensors /lib/firmware/qcom/shikra/sensors || exit 1; \
+      ln -sfn /var/cache/sensors /var/lib/tqftpserv/sensors || exit 1; \
+      echo "SOC=$SOC symlink paths created successfully" ;; \
+    *) exit 0 ;; \
+  esac'
+
 ExecStartPre=+/bin/chmod -R 644 /var/cache/sensors/registry/registry
-ExecStart=/usr/bin/sensors.qti sensorspd
+
+ExecStart=/bin/sh -c 'SOC=$(tr -d "\n" < /sys/devices/soc0/soc_id); \
+case "$SOC" in \
+  756|758|759) \
+    echo "Service disabled for this platform SOC=$SOC"; \
+    exit 0 ;; \
+  *) \
+    exec /usr/bin/sensors.qti sensorspd ;; \
+esac'
 
 [Install]
 WantedBy=multi-user.target
