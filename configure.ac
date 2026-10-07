@@ -87,6 +87,14 @@ AC_ARG_WITH(systemd,
         [SYSTEMD="no"])
 AM_CONDITIONAL([USE_SYSTEMD], [test "x${SYSTEMD}" != "xno"])
 
+AC_ARG_WITH([systemd-unitdir],
+    [AS_HELP_STRING([--with-systemd-unitdir=DIR],
+                    [systemd unit directory])],
+    [SYSTEMD_UNITDIR="$withval"],
+    [SYSTEMD_UNITDIR="/usr/lib/systemd/system"])
+
+AC_SUBST([SYSTEMD_UNITDIR])
+
 AC_ARG_ENABLE(versioned-lib,
         AS_HELP_STRING([--enable-versioned-lib], [enable versioned libs for debian packages]),
         [VERSIONED_LIB="yes"],
