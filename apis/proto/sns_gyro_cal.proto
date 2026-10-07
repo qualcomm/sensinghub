@@ -28,6 +28,4 @@
 //      units for the bias field in the message are in rad / s
 
 syntax = "proto2";
-import "nanopb.proto";
-import "sns_cal.proto";
 

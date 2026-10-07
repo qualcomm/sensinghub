@@ -35,6 +35,4 @@
 //      along that axis.
 
 syntax = "proto2";
-import "nanopb.proto";
-import "sns_std_sensor.proto";
 
