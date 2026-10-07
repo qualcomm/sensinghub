@@ -13,6 +13,7 @@
 #define MAX_DATA_VALUE_LEN 15
 #define COMM_TYPE_QMI    "0"
 #define COMM_TYPE_GLINK  "1"
+#define COMM_TYPE_RPMSG  "2"
 
 using namespace std;
 
@@ -292,7 +293,7 @@ void qshJsonParser::updateSensingHubInfo(const char * grpName, char * key, char 
   }
   else if(0 == strcmp(key, "no_of_channels") && mReadCommAttr)
   {
-    if(COMM_TYPE_GLINK ==mClientCommType)
+    if(COMM_TYPE_GLINK == mClientCommType || COMM_TYPE_RPMSG == mClientCommType)
       mClientCommValue = atoi(value);
   }
 

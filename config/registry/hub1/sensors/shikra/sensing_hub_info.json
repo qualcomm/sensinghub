@@ -8,7 +8,7 @@
       "owner": "sensing_hub_1",
       "sensing_hub_id": { "type": "int", "ver": "0", "data": "1" },
       "platform_id": { "type": "str","ver": "0", "data": "hub_1" },
-      "client_comm_type":{ "type": "int", "ver": "0", "data": "1"},
+      "client_comm_type":{ "type": "int", "ver": "0", "data": "2"},
       ".client_comm": {
         "owner": "sensing_hub_1",
         "link_name": { "type": "str", "ver": "0", "data":"lpaicp"},

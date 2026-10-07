@@ -40,6 +40,7 @@ endif
 cpp_sources = \
     ./src/qmiSession.cpp        \
     ./src/glinkSession.cpp      \
+    ./src/rpmsgSession.cpp            \
     ./src/sessionImpl.cpp       \
     ./src/sessionLoggerUtil.cpp
 
