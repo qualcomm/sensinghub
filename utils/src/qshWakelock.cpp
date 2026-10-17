@@ -18,7 +18,7 @@ qshWakelock* qshWakelock::getInstance(const char* lockName)
 {
   sns_logd("qshWakelock::getInstance");
   if(nullptr != mSelf) {
-    sns_logd("return an exsiting lock: %s", mSelf->mQshWakelockName.c_str());
+    sns_logd("return an existing lock: %s", mSelf->mQshWakelockName.c_str());
     return mSelf;
   } else {
     if (nullptr == lockName) {
@@ -121,7 +121,7 @@ int32_t qshWakelock::acquire()
   int32_t ret = -1;
   if (mFds[QSH_POWER_WAKE_lOCK_ACQUIRE_INDEX] >= 0) {
     if (write( mFds[QSH_POWER_WAKE_lOCK_ACQUIRE_INDEX], mQshWakelockName.c_str(), mQshWakelockName.length()+1) > 0) {
-      sns_logv("sucess wakelock acquire:%s", mQshWakelockName.c_str());
+      sns_logv("success wakelock acquire:%s", mQshWakelockName.c_str());
       mIsHeld = true;
       mCondition.notify_one();
       ret = 0;
@@ -139,7 +139,7 @@ int32_t qshWakelock::release()
   int32_t ret = -1;
   if (mFds[QSH_POWER_WAKE_lOCK_RELEASE_INDEX] >= 0) {
     if (write( mFds[QSH_POWER_WAKE_lOCK_RELEASE_INDEX],mQshWakelockName.c_str(), mQshWakelockName.length()+1) > 0) {
-      sns_logv("sucess release %s wakelock", mQshWakelockName.c_str());
+      sns_logv("success release %s wakelock", mQshWakelockName.c_str());
       mIsHeld = false;
       ret = 0;
     } else {
