@@ -226,6 +226,9 @@ static volatile sig_atomic_t g_running = 1;
 static void signal_handler(int sig) {
   (void)sig;
   g_running = 0;
+  if(g_running ==1){
+    g_running =0;
+  }
 }
 
 int main(int argc, char *argv[]) {
