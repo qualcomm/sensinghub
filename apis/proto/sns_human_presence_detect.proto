@@ -31,7 +31,6 @@
 
 syntax = "proto2";
 import "nanopb.proto";
-import "sns_presence.proto";
 
 // @brief Message IDs for Human Presence Detect Sensor
 enum sns_human_presence_detect_msgid 

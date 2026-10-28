@@ -23,7 +23,6 @@
 
 syntax = "proto2";
 import "nanopb.proto";
-import "sns_device_context.proto";
 
 // @brief The message IDs supported by the ontable_detect sensor
 enum sns_ontable_detect_msgid
