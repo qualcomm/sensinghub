@@ -44,6 +44,7 @@ permissions:
 env:
   RB3GEN2_ROOTFS_KEY: qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz
   S3_BUCKET: qli-prd-sensors-gh-artifacts
+  S3_UPLOAD_PREFIX: qualcomm/sensinghub
 
 jobs:
   build:
@@ -53,7 +54,8 @@ jobs:
     strategy:
       fail-fast: false
     outputs:
-      s3_location: ${{ steps.upload-artifacts.outputs.s3_location }}
+      s3_location: ${{ env.S3_UPLOAD_PREFIX }}/${{ github.run_id }}-${{ github.run_attempt }}/
+      artifacts_url: ${{ steps.upload-artifacts.outputs.url }}
 
     steps:
       - name: Ensure workspace ownership (pre-check)
@@ -186,8 +188,9 @@ jobs:
         run: |
           set -euxo pipefail
           BUILD_DIR="${GITHUB_WORKSPACE}/build"
-          TAR_PATH="${GITHUB_WORKSPACE}/build.tar"
-          mkdir -p "${BUILD_DIR}"
+          ART_DIR="${GITHUB_WORKSPACE}/artifacts"
+          TAR_PATH="${ART_DIR}/build.tar"
+          mkdir -p "${BUILD_DIR}" "${ART_DIR}"
           rm -f "${TAR_PATH}"
           tar --dereference -czf "${TAR_PATH}" -C "${GITHUB_WORKSPACE}" build
           echo "Build tar created at ${TAR_PATH}"
@@ -363,33 +366,35 @@ jobs:
           echo "==> Verify tar contents (first 100):"
           tar -tzf "${MOD_TAR}" | sed -n '1,100p'
 
-      # === Upload BOTH build.tar and modified rootfs tar to S3 in a SINGLE call (avoid 409 conflicts) ===
-      - name: Create file list (build.tar + modified rootfs tar)
-        id: make_file_list_all
+      # === Upload artifacts/ (build.tar + modified rootfs tar) to S3 in a single call ===
+      - name: Compute S3 object tags
+        id: s3_tags
         shell: bash
-        env:
-          BUILD_TAR: ${{ steps.create_build_tar.outputs.tar_path }}
-          MODIFIED_TAR: ${{ steps.repack_rootfs.outputs.modified_tar }}
         run: |
           set -euxo pipefail
-          WORKSPACE="${GITHUB_WORKSPACE}"
-          ARTIFACTS_DIR="${WORKSPACE}/artifacts"
-          FILE_LIST_ALL="${ARTIFACTS_DIR}/file_list_all.txt"
-          mkdir -p "${ARTIFACTS_DIR}"
-          : > "${FILE_LIST_ALL}"
-          echo "${BUILD_TAR}" >> "${FILE_LIST_ALL}"
-          echo "${MODIFIED_TAR}" >> "${FILE_LIST_ALL}"
-          echo "==> Combined artifacts list:"; cat "${FILE_LIST_ALL}"
-          echo "file_list_all=${FILE_LIST_ALL}" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            echo "object_tag=retention=7d" >> "$GITHUB_OUTPUT"
+            echo "build_type=buildType=PR" >> "$GITHUB_OUTPUT"
+          elif [ "${GITHUB_EVENT_NAME}" = "push" ]; then
+            echo "object_tag=retention=15d" >> "$GITHUB_OUTPUT"
+            echo "build_type=buildType=PUSH" >> "$GITHUB_OUTPUT"
+          else
+            echo "object_tag=retention=15d" >> "$GITHUB_OUTPUT"
+            echo "build_type=buildType=OTHER" >> "$GITHUB_OUTPUT"
+          fi
+          echo "==> Artifacts to upload:"
+          ls -la "${GITHUB_WORKSPACE}/artifacts"
 
-      - name: Upload artifacts to S3 (single call)
+      - name: Upload artifacts to S3
         id: upload-artifacts
-        uses: ./.github/actions/aws_s3_helper
+        uses: qualcomm-linux/upload-private-artifact-action@3d4dd0fac6e01a66d2df1502e4189676202c8ae3 # aws-v5
         with:
+          path: ./artifacts
           s3_bucket: ${{ env.S3_BUCKET }}
-          local_file: ${{ steps.make_file_list_all.outputs.file_list_all }}
-          mode: multi-upload
-          upload_location: qualcomm/sensinghub/${{ github.run_id }}-${{ github.run_attempt }}
+          destination: ${{ env.S3_UPLOAD_PREFIX }}/${{ github.run_id }}-${{ github.run_attempt }}/
+          object_tag: ${{ steps.s3_tags.outputs.object_tag }}
+          build_type: ${{ steps.s3_tags.outputs.build_type }}
+          build_branch: branch=${{ github.base_ref || github.ref_name }}
 
   publish_summary:
     needs: [build]
@@ -401,6 +406,7 @@ jobs:
           DOCKER_IMAGE: ${{ inputs.docker_image }}
           BUILD_SCRIPT: ${{ inputs.build_script }}
           BUILD_ARGS: ${{ inputs.build_args }}
+          ARTIFACTS_URL: ${{ needs.build.outputs.artifacts_url }}
         run: |
           {
             echo "# Build Summary"
@@ -409,5 +415,6 @@ jobs:
             echo "- Build script: ${BUILD_SCRIPT}"
             echo "- Build args: ${BUILD_ARGS}"
             echo "- Uploaded to S3 bucket: ${S3_BUCKET}"
-            echo "- Upload location: qualcomm/sensinghub/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            echo "- Upload location: ${S3_UPLOAD_PREFIX}/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}/"
+            echo "- Artifacts: ${ARTIFACTS_URL}"
           } >> "$GITHUB_STEP_SUMMARY"
