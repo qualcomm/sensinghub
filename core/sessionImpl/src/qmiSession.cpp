@@ -126,7 +126,9 @@ void qmiSession::qmi_connect()
     throw runtime_error("sensors service has no available instances");
   }
 
-  if (_connection_closed) {
+  if (!_connection_closed) {
+    sns_logi("connection got closed do not open qmi_channel-check");
+  }else{
     sns_logi("connection got closed do not open qmi_channel");
     return ;
   }
