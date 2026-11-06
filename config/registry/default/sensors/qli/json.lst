@@ -216,3 +216,5 @@ talos_sht4x_0.json
 talos_lps22df_0.json
 talos_evk_power_0.json
 talos_evk_icm4x6xx_0.json
+qsh_camera_common.json
+qsh_camera_ov08x_0.json
