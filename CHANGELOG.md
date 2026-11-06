@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.3.4] - 2026-11-06
+- Update the qli folder json.lst to accommodate qsh_camera_common.json and qsh_camera_ov08x_0.json
+
 ## [2.3.3] - 2026-10-28
 - Fix qshJsonParser member initialization order
 - Consolidate hub1/hub2 sensor registry configs into default
