@@ -15,7 +15,6 @@
 
 syntax = "proto2";
 import "nanopb.proto";
-import "sns_std_sensor.proto";
 
 
 // @brief Standard message IDs supported by Device Context Sensors.
