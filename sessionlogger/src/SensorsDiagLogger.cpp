@@ -11,7 +11,7 @@
 #define LIBSNSDIAGSHIM "libsnsdiagshim-c.so"
 #define LIBDIAG "libdiag.so"
 #else
-#define LIBSNSDIAGSHIM "libsnsdiagshim-c.so.1"
+#define LIBSNSDIAGSHIM "libsnsdiagshim-c.so.2"
 #define LIBDIAG "libdiag.so.1"
 #endif
 

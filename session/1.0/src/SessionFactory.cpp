@@ -48,10 +48,6 @@ ISession *sessionFactory::getSession(int hub_id, const SessionConfig *config) {
   return session;
 }
 
-ISession* sessionFactory::getSession() {
-	return getSession(-1);
-}
-
 vector<int> sessionFactory::getSensingHubIds() {
   vector<int> supportedHubIds;
   loadSymbol();
