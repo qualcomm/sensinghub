@@ -27,6 +27,7 @@
   ============================================================================*/
 #include <vector>
 #include "ISession.h"
+#include "SessionConfig.h"
 
 namespace com {
 namespace quic {
@@ -77,6 +78,14 @@ public:
    */
   ~sessionFactory(){};
 
+    /**
+   * @brief Creates ISession instance using the default sensing-hub ID
+   *
+   * @return
+   *   - Pointer to ISession object  Success.
+   *   - Nullptr                     Failure.
+   */
+  ISession *getSession();
 
   /**
    * @brief Creates ISession instance for the specified sensing-hub ID
@@ -93,25 +102,22 @@ public:
    * @return
    *   - Pointer to ISession object  Success.
    *   - Nullptr                     Failure.
-   *
    */
-  ISession* getSession(int hub_id);
+  ISession *getSession(int hub_id);
 
   /**
-   * @brief Creates an ISession instance using the default sensing-hub.
+   * @brief Creates ISession instance from a configured SessionConfig for the specified sensing-hub ID.
    *
-   * This is a convenience overload of getSession(int hub_id) that
-   * requests a session for the default hub by internally using the
-   * implementation-defined default hub ID.
-   *
-   * @note The returned ISession instance is initially not in open state.
-   * The client must call open() before sending any requests.
+   * @param [in] hub_id  Hub ID of the desired sensing-hub.
+   * @param [in] config  SessionConfig instance obtained from
+   * getSessionConfig().
    *
    * @return
    *   - Pointer to ISession object  Success.
    *   - Nullptr                     Failure.
+   *
    */
-  ISession* getSession();
+  ISession *getSession(int hub_id, const SessionConfig *config);
 
 
    /**
@@ -127,6 +133,27 @@ public:
    */
   std::vector<int> getSensingHubIds();
 
+  /**
+   * @brief Requests a new SessionConfig instance.
+   * Clients populate it via setters and pass it to
+   * getSession(int hub_id, const SessionConfig*)
+   * Client is responsible to destruct the config
+   * @return Pointer to a new SessionConfig instance.
+   *
+   */
+  SessionConfig *getSessionConfig();
+
+  /**
+   * @brief Sets an optional direct-channel create request on a SessionConfig
+   * This is used for direct channel requests.
+   *
+   * @param [in] config          SessionConfig instance to modify.
+   * @param [in] encodedRequest  Proto-encoded sns_direct_channel_create_msg.
+   * @param [in] requestLen      Length of encodedRequest in bytes.
+   *
+   */
+  void setDirectChannelRequest(SessionConfig* config, const char* encodedRequest, int requestLen);
+
 private:
   /**
    * @brief Function pointer type for the ISession creation symbol.
@@ -134,6 +161,11 @@ private:
    */
   typedef ISession* (*getSession_t)(int);
 
+  /**
+   * @brief Pointer to ISession object, created from an encoded SessionConfig.
+   *
+   */
+  typedef ISession* (*getSessionFromConfig_t)(const char*, int);
 
   /**
    * @brief Function pointer type for the Sensing Hub ID retrieval symbol.
@@ -149,16 +181,14 @@ private:
    * symbols required to:
    *   - Create ISession instances.
    *   - Retrieve Sensing Hub IDs.
-   *
-   * @return
-   *   -  0 on success (all required symbols were resolved).
-   *   - -1 on failure (initialization or symbol resolution failed).
+   * @return 0 : Success / -1 : Failure
    */
   int loadSymbol();
 
-  static bool mSymbolLoaded;  /*!< Indicates whether the required runtime symbols are available.*/
-  static getSession_t mGetSessionSymbol;  /*!< Function pointer used to create ISession instances. */
-  static getSensingHubIds_t mGetSensingHubIdsSymbol;  /*!< Function pointer used to retrieve Sensing Hub IDs. */
+  static bool mSymbolLoaded;  /*!< true if loadSymbol() returns 0, else false*/
+  static getSession_t mGetSessionSymbol;  /*!< stores pointer to ISession */
+  static getSessionFromConfig_t mgetSessionFromConfigSymbol;  /*!< stores pointer to config-based ISession creation */
+  static getSensingHubIds_t mGetSensingHubIdsSymbol;  /*!< stores pointer to vector containing Hub IDs */
 };
 
 }  // namespace V1_0

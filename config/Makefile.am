@@ -68,8 +68,5 @@ output_filesdir = $(shikra_out_dir)
 output_files_DATA = $(srcdir)/registry/default/sns_reg_version \
                     $(srcdir)/registry/default/sensors_registry
 
-shikra_regconfig_filesdir = $(shikra_dir)
-shikra_regconfig_files_DATA = $(srcdir)/registry/default/sensors/shikra/sns_reg_config
-
 sns_reg_verdir = $(version_dir)
 sns_reg_ver_DATA = $(srcdir)/registry/default/sns_reg_version
