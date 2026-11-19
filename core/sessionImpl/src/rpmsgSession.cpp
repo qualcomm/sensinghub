@@ -163,8 +163,9 @@ void rpmsgSession::rpmsg_cleanup_conn() {
  * returns, so this polls briefly.
  */
 static int find_rpmsg_dev_node(const std::string &chnl_name,
-                                std::string &out_dev_path) {
-  for (int attempt = 0; attempt < MAX_RPMSG_EPT_DISCOVER_RETRIES; attempt++) {
+                                std::string &out_dev_path,
+                                int attempts = MAX_RPMSG_EPT_DISCOVER_RETRIES) {
+  for (int attempt = 0; attempt < attempts; attempt++) {
     DIR *dir = opendir(RPMSG_DEV_SYSFS_DIR);
     if (dir != nullptr) {
       struct dirent *entry;
@@ -194,7 +195,8 @@ static int find_rpmsg_dev_node(const std::string &chnl_name,
       }
       closedir(dir);
     }
-    usleep(RPMSG_EPT_DISCOVER_POLL_MS * 1000);
+    if (attempt + 1 < attempts)
+      usleep(RPMSG_EPT_DISCOVER_POLL_MS * 1000);
   }
   return -ENOENT;
 }
@@ -301,6 +303,27 @@ int rpmsgSession::create_rpmsg_endpoint(const std::string &chnl_name,
     return -errno;
   }
 
+  /* All processes must use the same /dev/rpmsgN for a channel: rpmsg_char
+   * allows one open per node, so a second process gets EBUSY and moves on
+   * to the next channel. Each CREATE_EPT makes a new node, so reuse an
+   * existing one, and lock the ctrl device so that two processes cannot
+   * both create one. The lock is dropped when ctrl_fd is closed.
+   */
+  if (flock(ctrl_fd, LOCK_EX) != 0) {
+    int lock_errno = errno;
+    sns_loge("rpmsgSession: flock on %s failed, errno = %d",
+             ctrl_dev_path.c_str(), lock_errno);
+    ::close(ctrl_fd);
+    return -lock_errno;
+  }
+
+  if (find_rpmsg_dev_node(chnl_name, out_dev_path, 1) == 0) {
+    sns_logi("Endpoint %s exists at %s", chnl_name.c_str(),
+             out_dev_path.c_str());
+    ::close(ctrl_fd);
+    return 0;
+  }
+
   struct rpmsg_endpoint_info ept_info;
   memset(&ept_info, 0, sizeof(ept_info));
 
@@ -318,9 +341,8 @@ int rpmsgSession::create_rpmsg_endpoint(const std::string &chnl_name,
 
   sns_logi("RPMSG_CREATE_EPT_IOCTL success");
 
-  ::close(ctrl_fd);
-
   ret = find_rpmsg_dev_node(chnl_name, out_dev_path);
+  ::close(ctrl_fd);
 
   if (ret != 0) {
     sns_loge("Could not discover rpmsg dev node ret=%d", ret);
@@ -1096,6 +1118,31 @@ void rpmsgSession::rpmsg_disconnect(bool thread_exit) {
     }
   }
 
+  // Stop and join poll thread FIRST, BEFORE destroying endpoint
+  if (thread_exit && _is_thread_created) {
+    rpmsg_db_cleanup();
+
+    // Signal poll thread to exit
+    sns_logd("rpmsgSession: Signaling poll thread to exit via wakeup pipe");
+    if (::write(_wakeup_pipe[1], "d", 1) < 0) {
+      sns_loge("rpmsgSession: write err on wakeup pipe errno = %d, "
+               "proceeding anyway", errno);
+    }
+
+    // CRITICAL: Wait for poll thread to fully exit BEFORE closing resources
+    sns_logd("rpmsgSession: Waiting for poll thread to join");
+    _rpmsg_read_threadhdl.join();
+    sns_logd("rpmsgSession: Poll thread joined successfully");
+
+    _is_thread_created = false;
+    restore_ssr_conn_hndl_worker.reset();
+    ind_hndl_worker.reset();
+    ::close(_wakeup_pipe[0]);
+    ::close(_wakeup_pipe[1]);
+  }
+
+  // NOW it's safe to destroy the endpoint and close fd
+  // Poll thread has already exited
   if (-1 != _chnl_fd) {
     destroy_rpmsg_endpoint(_chnl_fd);
     if (::close(_chnl_fd) != 0) {
@@ -1106,22 +1153,6 @@ void rpmsgSession::rpmsg_disconnect(bool thread_exit) {
   sns_logi("rpmsgSession: channel closed on fd = %d", _chnl_fd.load());
   _chnl_fd = -1;
   _chnl_name = "";
-
-  if (thread_exit) {
-    rpmsg_db_cleanup();
-    if (::write(_wakeup_pipe[1], "d", 1) < 0) {
-      sns_loge("rpmsgSession: write err on wakup pipe errrno = %d no way to "
-               "join readthread",
-               errno);
-    } else {
-      _rpmsg_read_threadhdl.join();
-      _is_thread_created = false;
-      restore_ssr_conn_hndl_worker.reset();
-      ind_hndl_worker.reset();
-      ::close(_wakeup_pipe[0]);
-      ::close(_wakeup_pipe[1]);
-    }
-  }
 }
 
 int rpmsgSession::get_suid(suid &out_suid, sns_client_glink_ind &ind_msg) {

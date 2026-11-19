@@ -21,7 +21,8 @@ requiredlibs += @QMIFRAMEWORK_LIBS@
 endif
 
 library_includedir = $(pkgincludedir)
-include_HEADERS = ./*.h
+
+include_HEADERS = ./sns_client_api_v01.h
 
 lib_LTLIBRARIES = libQshQmiIDL.la
 libQshQmiIDL_la_CC = @CC@
