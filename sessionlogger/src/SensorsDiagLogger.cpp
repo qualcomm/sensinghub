@@ -7,6 +7,14 @@
 #include <dlfcn.h>
 #include "SensorsDiagLogger.h"
 
+#ifdef __ANDROID_API__
+#define LIBSNSDIAGSHIM "libsnsdiagshim-c.so"
+#define LIBDIAG "libdiag.so"
+#else
+#define LIBSNSDIAGSHIM "libsnsdiagshim-c.so.2"
+#define LIBDIAG "libdiag.so.1"
+#endif
+
 namespace com {
 namespace quic {
 namespace sensinghub {
@@ -20,7 +28,7 @@ void SensorsDiagLogger::diagShimInit() {
     return;
   }
   // Attempt to load the diag shim
-  _diagShim.handle = dlopen("libsnsdiagshim-c.so.2", RTLD_NOW);
+  _diagShim.handle = dlopen(LIBSNSDIAGSHIM, RTLD_NOW);
   if (!_diagShim.handle) {
     return;
   }
@@ -51,10 +59,10 @@ bool SensorsDiagLogger::isAvailable() {
   static bool sLibdiagAvailable = false;
   if (!sLibdiagChecked) {
     sLibdiagChecked = true;
-    void* libdiagHandle = dlopen("libdiag.so.1", RTLD_NOW | RTLD_NOLOAD);
+    void* libdiagHandle = dlopen(LIBDIAG, RTLD_NOW | RTLD_NOLOAD);
     if (!libdiagHandle) {
       // Not already loaded — try a fresh load.
-      libdiagHandle = dlopen("libdiag.so.1", RTLD_NOW);
+      libdiagHandle = dlopen(LIBDIAG, RTLD_NOW);
     }
     sLibdiagAvailable = (libdiagHandle != nullptr);
   }

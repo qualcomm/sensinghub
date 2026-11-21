@@ -10,6 +10,8 @@
 #define TARGET_ARM64
 #elif defined(__arm__)
 #define TARGET_ARM
+#elif defined(__x86_64__) || defined(__i386__)
+#define TARGET_X86
 #else
 #error "target cpu architecture not supported"
 #endif
@@ -56,13 +58,18 @@ public:
         unsigned long long val = 0;
         asm volatile("mrs %0, cntvct_el0" : "=r" (val));
         return val;
-    #else
+    #elif defined(TARGET_ARM)
         uint64_t val;
         unsigned long lsb = 0, msb = 0;
         asm volatile("mrrc p15, 1, %[lsb], %[msb], c14"
                      : [lsb] "=r" (lsb), [msb] "=r" (msb));
         val = ((uint64_t)msb << 32) | lsb;
         return val;
+    #else /* TARGET_X86 */
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        return static_cast<uint64_t>(ts.tv_sec) * 1000000000ULL
+               + static_cast<uint64_t>(ts.tv_nsec);
     #endif
     }
 
@@ -76,10 +83,12 @@ public:
         uint64_t val = 0;
         asm volatile("mrs %0, cntfrq_el0" : "=r" (val));
         return val;
-    #else
+    #elif defined(TARGET_ARM)
         uint32_t val = 0;
         asm volatile("mrc p15, 0, %[val], c14, c0, 0" : [val] "=r" (val));
         return val;
+    #else /* TARGET_X86 – qtimerGetTicks() returns nanoseconds, so freq = 1 GHz */
+        return 1000000000ULL;
     #endif
     }
 
