@@ -7,6 +7,7 @@
 #include <cmath>
 #include <chrono>
 #include <fstream>
+#include <thread>
 #include <string>
 #include "sns_client.pb.h"
 #include "sns_suid.pb.h"
@@ -19,7 +20,14 @@ using namespace std::chrono;
 struct suid_decode_context {
     std::vector<std::vector<suid>> *suids;
     std::vector<std::string> *datatype;
+    bool is_suid_discovery_done_event;
 };
+
+suidLookUp::suidLookUp(suidEventCb cb, discoveryDoneCb discoveryDoneCallback, int hubId)
+  : suidLookUp(cb, hubId)
+{
+    mDiscoveryDoneCb = discoveryDoneCallback;
+}
 
 suidLookUp::suidLookUp(suidEventCb cb, int hubID)
   : mEventCb(cb)
@@ -130,7 +138,13 @@ void suidLookUp::requestSuid(std::string datatype, bool default_only)
     if (nullptr != mSession){
       int ret = mSession->sendRequest(mSensorUid, encoded_string);
       if(0 != ret){
-        sns_loge("Error in sending request");
+        int retry_duration = 100;
+        sns_logd("retrying send request after %dms sleep since IPC might be busy", retry_duration);
+        std::this_thread::sleep_for(std::chrono::milliseconds(retry_duration));
+        ret = mSession->sendRequest(mSensorUid, encoded_string);
+        if(0 != ret) {
+            sns_loge("Error in sending request");
+        }
         return;
       }
     }
@@ -165,8 +179,8 @@ bool suid_decode_event(pb_istream_t *stream, const pb_field_t *field,
   sns_logd("event msg_id=%d", msg_id);
   if (msg_id == SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT){
     sns_logi("Received SUID Discovery Done Event");
-    ctx->suids->emplace_back(std::vector<suid>{});
-    ctx->datatype->emplace_back("SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT");
+    ctx->is_suid_discovery_done_event = true;
+    return true;
   } else if(msg_id == SNS_SUID_MSGID_SNS_SUID_EVENT) {
     if (!data.buf || data.buf_len == 0) {
         sns_loge("Empty payload in client event");
@@ -229,7 +243,8 @@ void suidLookUp::handleQshEvent(const uint8_t *data, size_t size, uint64_t timeS
 
     suid_decode_context arg_context = {
         .suids = &suids_vector,
-        .datatype = &datatype_vector
+        .datatype = &datatype_vector,
+        .is_suid_discovery_done_event = false,
     };
     pb_istream_t stream = pb_istream_from_buffer(
       (const pb_byte_t *)data,
@@ -241,11 +256,22 @@ void suidLookUp::handleQshEvent(const uint8_t *data, size_t size, uint64_t timeS
     if (!pb_decode(&stream, sns_client_event_msg_fields, &event)){
       sns_loge("lookup: sns_client_event decoding failed %s", PB_GET_ERROR(&stream));
     }
+
+    // Handle discovery done event
+    if (arg_context.is_suid_discovery_done_event && mDiscoveryDoneCb) {
+        mDiscoveryDoneCb();
+        return;
+    }
+
+    // Handle SUID events
+    if (mEventCb == nullptr) {
+        return;
+    }
     /* send callback for this datatype */
     if(suids_vector.size() == datatype_vector.size() && datatype_vector.size() != 0){
-      for(size_t i=0;i<datatype_vector.size();i++)
-        if(datatype_vector[i] != "SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT")
-          mEventCb(datatype_vector[i], suids_vector[i]);
+      for(size_t i=0;i<datatype_vector.size();i++) {
+        mEventCb(datatype_vector[i], suids_vector[i]);
+      }
     } else {
       sns_loge("lookup: sns_client_event events mismatch");
     }
@@ -257,14 +283,6 @@ locate::locate()
 
 void locate::onSuidsAvailable(const std::string& datatype, const std::vector<suid>& suids)
 {
-    // Notifying callback that SUID discovery is done using special value for datatype.
-    if ((datatype.compare("SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT") == 0))
-    {
-        unique_lock<mutex> lk(mMutex);
-        mLookupDone = true;
-        mConditionVar.notify_one();
-        return;
-    }
     if (!mSuids)
     {
         sns_loge("mSuids pointer field is NULL.");
@@ -289,6 +307,12 @@ void locate::onSuidsAvailable(const std::string& datatype, const std::vector<sui
     }
 }
 
+void locate::onDiscoveryDone() {
+    unique_lock<mutex> lk(mMutex);
+    mLookupDone = true;
+    mConditionVar.notify_one();
+}
+
 std::shared_ptr<std::vector<suid>> locate::lookUp(const std::string& dataType, int hubId, std::chrono::milliseconds timeoutMs)
 {
     if (!mSuids)
@@ -301,26 +325,31 @@ std::shared_ptr<std::vector<suid>> locate::lookUp(const std::string& dataType, i
         return mSuids;
     }
 
+    discoveryDoneCb discoveryDoneLambda = [this] (void) -> void {
+        this->onDiscoveryDone();
+    };
+
     suidLookUp lookup(
         [this](const auto& dataType, const vector<suid>& suids)
         {
             this->onSuidsAvailable(dataType, suids);
-        }, hubId);
+        }, discoveryDoneLambda, hubId);
 
     lookup.requestSuid(dataType);
 
     sns_logi("waiting for suid lookup");
     // TODO remove timeout once suid_lookup request_suid() is fixed
     const auto then = std::chrono::system_clock::now() + timeoutMs;
-
-    unique_lock<mutex> lk(mMutex);
-    while (!mLookupDone) {
-        if (mConditionVar.wait_until(lk, then) == std::cv_status::timeout) {
+    {
+        unique_lock<mutex> lk(mMutex);
+        bool on_time = mConditionVar.wait_until(lk, then, [this]() {
+            return mLookupDone;
+        });
+        if (!on_time)
+        {
             sns_logi("SUID lookup timeout(%lld ms) for datatype %s.", timeoutMs.count(), dataType.c_str());
-            break;
         }
     }
-
-    sns_logi("%s", "end suid lookup");
+    sns_logi("end suid lookup");
     return mSuids;
 }
