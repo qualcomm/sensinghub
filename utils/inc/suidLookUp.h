@@ -20,7 +20,7 @@ using com::quic::sensinghub::session::V1_0::sessionFactory;
 /**
  * @brief type alias for an suid event function
  *
- * param datatype: datatype of of the sensor associated with the
+ * param datatype: datatype of the sensor associated with the
  * event
  * param suids: vector of suids available for the given datatype
  */
@@ -30,7 +30,7 @@ using suidEventCb =
 
 /**
  * @brief Utility class for discovering available sensors using
- *        dataytpe
+ *        datatype
  *
  */
 class suidLookUp
