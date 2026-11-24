@@ -26,8 +26,6 @@ ExecStartPre=+/bin/sh -c 'SOC=$(tr -d "\n" < /sys/devices/soc0/soc_id); \
       echo "Creating symlink paths for SOC=$SOC"; \
       mkdir -p /lib/firmware/qcom/shikra || exit 1; \
       mkdir -p /var/lib/tqftpserv || exit 1; \
-      rm -rf /lib/firmware/qcom/shikra/sensors || exit 1; \
-      rm -rf /var/lib/tqftpserv/sensors || exit 1; \
       ln -sfn /etc/sensors /lib/firmware/qcom/shikra/sensors || exit 1; \
       ln -sfn /var/cache/sensors /var/lib/tqftpserv/sensors || exit 1; \
       echo "SOC=$SOC symlink paths created successfully" ;; \
