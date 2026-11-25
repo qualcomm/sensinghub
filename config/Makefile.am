@@ -6,10 +6,6 @@ version_dir = @sysconfdir@/sensors/registry
 
 reg_config_dir = @sysconfdir@/sensors
 
-shikra_dir = @base_libdir@/firmware/qcom/shikra/sensors
-shikra_out_dir = @localstatedir@/lib/tqftpserv/sensors/registry
-rules_out_dir = @sysconfdir@/udev/rules.d
-
 common_list = $(wildcard $(srcdir)/registry/default/sensors/common/*.json)
 common_jsondir   = $(reg_config_dir)/config
 common_json_DATA = $(common_list)
@@ -63,10 +59,6 @@ talos_json_DATA = $(talos_list)
 shikra_list = $(wildcard $(srcdir)/registry/default/sensors/shikra/*.json)
 shikra_jsondir = $(reg_config_dir)/config
 shikra_json_DATA = $(shikra_list)
-
-output_filesdir = $(shikra_out_dir)
-output_files_DATA = $(srcdir)/registry/default/sns_reg_version \
-                    $(srcdir)/registry/default/sensors_registry
 
 sns_reg_verdir = $(version_dir)
 sns_reg_ver_DATA = $(srcdir)/registry/default/sns_reg_version

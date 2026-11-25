@@ -81,12 +81,6 @@ AC_ARG_WITH([fastrpc-includes],
   [FASTRPC_CFLAGS=""])
 AC_SUBST([FASTRPC_CFLAGS])
 
-AC_ARG_WITH(systemd,
-        AS_HELP_STRING([--with-systemd], [include services in systemd]),
-        [SYSTEMD="yes"],
-        [SYSTEMD="no"])
-AM_CONDITIONAL([USE_SYSTEMD], [test "x${SYSTEMD}" != "xno"])
-
 AC_ARG_WITH([systemd-unitdir],
     [AS_HELP_STRING([--with-systemd-unitdir=DIR],
                     [systemd unit directory])],
