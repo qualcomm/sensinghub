@@ -40,10 +40,12 @@ public:
   bool isFileParsed();
 
 private:
-  int mDeviceSocId;
-  std::vector<int> mJsonSocIdList;
-  int mJsonSocId;
+  /* field name -> device's actual value, read once at construction */
+  std::unordered_map<std::string, int> mDeviceConfigs;
+  /* field name -> list of ids accepted for that field, as declared in the config currently being parsed */
+  std::unordered_map<std::string, std::vector<int>> mJsonConfigs;
   int readSocId();
+  int readSoftSkuId();
   void resetParserState();
 
   std::unordered_map<std::string, int> mSensingHubNameIdMap;
@@ -63,6 +65,10 @@ private:
   bool mSensingHubNameIdMapFilled;
   bool mCommMapFilled;
   bool mIsFileParsed;
+  /* set by parseFile() when the file is valid JSON but its soc_id/sku_id
+   * gating doesn't match this device -- lets loadFile() tell that case
+   * apart from a real parse error. */
+  bool mDeviceConfigMismatch;
 
   int getWhitespaceLen(char const* str, uint32_t strLen);
 

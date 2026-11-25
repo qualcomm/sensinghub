@@ -29,6 +29,12 @@ using suidEventCb =
                        const std::vector<suid>& suids)>;
 
 /**
+ * @brief type alias for discovery done callback
+ *
+*/
+using discoveryDoneCb = std::function<void(void)>;
+
+/**
  * @brief Utility class for discovering available sensors using
  *        dataytpe
  *
@@ -39,9 +45,24 @@ public:
     /**
      * @brief creates a new connection to qsh for suid lookup
      *
-     * @param cb callback function for suids
+     * @param suidCb callback function called when SUID event is received
+     * @param hubId hubId for the session to create the lookup for
+     * Note: Doesn't forward SUID_DISCOVERY_DONE event as there's no
+     * discovery callback.
      */
     suidLookUp(suidEventCb cb, int hubId = -1);
+
+    /**
+     * @brief
+     * Creates a new connection to qsh and registers for both
+     * SUID events and SUID_DISCOVERY_DONE events.
+     *
+     * @param suidCb callback function called when SUID event is received
+     * @param discoveryDoneCb callback function called  when SUID_DISCOVERY_DONE event is received
+     * @param hubId hubId for the session to create the lookup for
+     */
+    suidLookUp(suidEventCb suidCb, discoveryDoneCb discoveryDoneCallback, int hubId = -1);
+
     ~suidLookUp();
 
     /**
@@ -62,6 +83,7 @@ private:
     std::unique_ptr<sessionFactory> mSessionFactory = nullptr;
     suid mSensorUid;
     bool mSetThreadName = false;
+    discoveryDoneCb mDiscoveryDoneCb;
 };
 
 /**
@@ -109,6 +131,9 @@ public:
 private:
     void onSuidsAvailable(const std::string& datatype,
         const std::vector<suid>& suids);
+
+    // callback for SNS_SUID_DISCOVERY_DONE event
+    void onDiscoveryDone();
 
     static constexpr auto DEFAULT_SUID_LOOKUP_TIMEOUT = std::chrono::milliseconds(1000);
 

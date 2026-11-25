@@ -7,12 +7,14 @@ if ENABLE_VERSIONED_LIB
   AM_CPPFLAGS += -DSNS_VERSIONED_LIB_ENABLED
 endif
 
-cpp_sources = src/SessionFactory.cpp
+cpp_sources = src/SessionFactory.cpp              \
+              src/SessionConfig.cpp
 
 requiredlibs = -ldl
 
 include_HEADERS = $(srcdir)/inc/ISession.h        \
-                  $(srcdir)/inc/SessionFactory.h     \
+                  $(srcdir)/inc/SessionFactory.h  \
+                  $(srcdir)/inc/SessionConfig.h   \
                   $(top_srcdir)/common/inc/suid.h
 
 library_includedir = $(pkgincludedir)

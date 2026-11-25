@@ -233,50 +233,55 @@ namespace qshPb {
       event.payload.funcs.decode = &decode_payload;
       event.payload.arg = &data;
 
-      uint32_t msg_id = get_msg_id(*stream);
-      sns_logd("decode_suids: event msg_id=%d", msg_id);
 
-      if (msg_id != SNS_SUID_MSGID_SNS_SUID_EVENT) {
-        sns_loge("decode_suids: unexpected msg_id=%d", msg_id);
-        return true;
-      }
       if (!pb_decode(stream, sns_client_event_msg_sns_client_event_fields, &event)) {
         return false;
       }
 
-      pb_istream_t sub_stream = pb_istream_from_buffer(
-          reinterpret_cast<const pb_byte_t*>(data.buf), data.buf_len);
-      sns_suid_event suid_event = sns_suid_event_init_default;
-      pb_buffer_arg dt_data{};
-      std::vector<sns_std_suid> suid_vector;
+      if (event.msg_id == SNS_SUID_MSGID_SNS_SUID_DISCOVERY_DONE_EVENT) {
+        sns_logi("decode_suids: Received Discover Done event");
+        return true;
+      }
+      else if(event.msg_id == SNS_SUID_MSGID_SNS_SUID_EVENT)
+      {
+        pb_istream_t sub_stream = pb_istream_from_buffer(
+            reinterpret_cast<const pb_byte_t*>(data.buf), data.buf_len);
+        sns_suid_event suid_event = sns_suid_event_init_default;
+        pb_buffer_arg dt_data;
+        std::vector<sns_std_suid> suid_vector;
 
-      suid_event.suid.funcs.decode = &decode_suid;
-      suid_event.suid.arg = &suid_vector;
-      suid_event.data_type.funcs.decode = &decode_payload;
-      suid_event.data_type.arg = &dt_data;
+        suid_event.suid.funcs.decode = &decode_suid;
+        suid_event.suid.arg = &suid_vector;
+        suid_event.data_type.funcs.decode = &decode_payload;
+        suid_event.data_type.arg = &dt_data;
 
-      if (!pb_decode(&sub_stream, sns_suid_event_fields, &suid_event)) {
-        sns_loge("decode_suids: failed to decode sns_suid_event");
+        if (!pb_decode(&sub_stream, sns_suid_event_fields, &suid_event)) {
+          sns_loge("decode_suids: failed to decode sns_suid_event");
+          return false;
+        }
+
+        std::string datatype;
+        if (dt_data.buf != nullptr && dt_data.buf_len > 0) {
+          datatype.assign(reinterpret_cast<const char*>(dt_data.buf), dt_data.buf_len);
+          // Trim any trailing NUL that some encoders append.
+          if (!datatype.empty() && datatype.back() == '\0') {
+            datatype.pop_back();
+          }
+        }
+
+        sns_logi("decode_suids: datatype=%s num_suids=%zu", datatype.c_str(), suid_vector.size());
+        for (const sns_std_suid& s : suid_vector) {
+          sns_logd("decode_suids: suid_low=%" PRIu64 " suid_high=%" PRIu64,
+                  s.suid_low, s.suid_high);
+          ctx->suids->push_back(suid(s.suid_low, s.suid_high));
+        }
+        *(ctx->datatype) = datatype;
+        return true;
+      }
+      else {
+        sns_loge("decode_suids: unexpected msg_id=%d", event.msg_id);
         return false;
       }
-
-      std::string datatype;
-      if (dt_data.buf != nullptr && dt_data.buf_len > 0) {
-        datatype.assign(reinterpret_cast<const char*>(dt_data.buf), dt_data.buf_len);
-        // Trim any trailing NUL that some encoders append.
-        if (!datatype.empty() && datatype.back() == '\0') {
-          datatype.pop_back();
-        }
-      }
-
-      sns_logi("decode_suids: datatype=%s num_suids=%zu", datatype.c_str(), suid_vector.size());
-      for (const sns_std_suid& s : suid_vector) {
-        sns_logd("decode_suids: suid_low=%" PRIu64 " suid_high=%" PRIu64,
-                 s.suid_low, s.suid_high);
-        ctx->suids->push_back(suid(s.suid_low, s.suid_high));
-      }
-      *(ctx->datatype) = datatype;
-      return true;
     }
 
     bool decode_attribute(pb_istream_t* stream, const pb_field_t* /*field*/, void** arg)

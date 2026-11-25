@@ -1,0 +1,18 @@
+// @file sns_session_config.proto
+//
+// @brief Private wire message shared only between libsensinghubsession's
+// SessionConfig (client) and libQshSession's getSessionFromConfig() (impl)
+// to pass an opaque SessionConfig 
+//
+// @copyright
+// Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+// SPDX-License-Identifier: BSD-3-Clause
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_direct_channel.proto";
+
+message sns_session_config_req {
+  optional int32 hub_id                  = 1;
+  optional sns_direct_channel_create_msg create_msg  = 2;
+}
