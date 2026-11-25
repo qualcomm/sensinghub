@@ -27,7 +27,5 @@ if USE_GLIB
  sensors_qti_LDFLAGS += @GLIB_LIBS@
 endif
 
-if USE_SYSTEMD
 systemdunitdir = @SYSTEMD_UNITDIR@
 systemdunit_DATA = sensors.qti.service
-endif
