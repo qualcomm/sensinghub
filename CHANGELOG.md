@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-11-25
+- sensorsdaemon: stop removing existing symlink targets before relinking
+- config, sensorsdaemon: drop optional systemd conditional and shikra registry vars
+
+## [2.4.0] - 2026-11-19
+- core: fix rpmsg endpoint creation race and disconnect ordering
+
 ## [2.3.4] - 2026-11-06
 - Update the qli folder json.lst to accommodate qsh_camera_common.json and qsh_camera_ov08x_0.json
 
