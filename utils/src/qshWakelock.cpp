@@ -18,7 +18,7 @@ qshWakelock* qshWakelock::getInstance(const char* lockName)
 {
   sns_logd("qshWakelock::getInstance");
   if(nullptr != mSelf) {
-    sns_logd("return an exsiting lock: %s", mSelf->mQshWakelockName.c_str());
+    sns_logd("return an existing lock: %s", mSelf->mQshWakelockName.c_str());
     return mSelf;
   } else {
     if (nullptr == lockName) {
