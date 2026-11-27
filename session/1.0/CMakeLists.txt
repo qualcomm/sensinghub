@@ -3,7 +3,10 @@
 #           with the help of cmake
 #
 
-add_library(sensinghubsession SHARED  ${CMAKE_CURRENT_SOURCE_DIR}/src/SessionFactory.cpp)
+add_library(sensinghubsession SHARED
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/SessionFactory.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/SessionConfig.cpp
+)
 
 target_include_directories(sensinghubsession PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>

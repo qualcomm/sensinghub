@@ -58,7 +58,12 @@ namespace implementation {
 #define WAKEUP_SESSION_ID       0
 #define NON_WAKEUP_SESSION_ID   1
 #define MAX_NUM_SESSION_ID      2
+#ifdef SENSORS_HLOS_x86_SIMULATION_BUILD
+// x86 unit-test build simulated glink channel symlink is created under /tmp/ 
+#define GLINK_CHNL_PREFIX       "/tmp/glinkpkt_"
+#else
 #define GLINK_CHNL_PREFIX       "/dev/glinkpkt_"
+#endif
 #define GLINK_WAKELOCK_NAME     "SensorsHAL_WAKEUP"
 
 enum qsh_conn_status {
